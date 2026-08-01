@@ -28,3 +28,10 @@ The project is structured into three parts, each demonstrating progressive conce
 - **Lightweight Kubernetes**: Deploying and managing **K3s** and **K3d** (K3s in Docker containers).
 - **Cluster Networking & Ingress**: Exposing services and configuring Host-based HTTP routing using Kubernetes Ingress controllers.
 - **GitOps & Continuous Delivery**: Achieving declarative infrastructure management and automated synchronization via **Argo CD**.
+
+---
+
+## 📚 Documentation & Concepts Guide
+
+For a detailed explanation of Kubernetes fundamentals, numeronyms (K8s), K3s vs. K3d comparisons, and practical analogies, check out:
+- 📖 [Kubernetes Concepts & Architecture Guide](file:///home/reigab/Inception-of-Things/docs/k8s_concepts.md)

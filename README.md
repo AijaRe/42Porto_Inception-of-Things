@@ -34,4 +34,4 @@ The project is structured into three parts, each demonstrating progressive conce
 ## Documentation & Concepts Guide
 
 For a detailed explanation of Kubernetes fundamentals, numeronyms (K8s), K3s vs. K3d comparisons, and practical analogies, check out:
-- [Kubernetes Concepts & Architecture Guide](file:///home/reigab/Inception-of-Things/docs/k8s_concepts.md)
+- [Kubernetes Concepts & Architecture Guide](./docs/k8s_concepts.md)

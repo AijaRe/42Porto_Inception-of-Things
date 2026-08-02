@@ -1,6 +1,6 @@
 # Kubernetes
 
-A reference document explaining the core concepts of **K8s**, **K3s** and **K3d**
+A reference document explaining the core concepts of **K8s**, **K3s** and **K3d**.
 
 ---
 
@@ -27,6 +27,7 @@ When running hundreds of containers across multiple machines, K8s automatically 
 ## 2. Why is it called K8s?
 
 K8s is a numeronym. The name **"Kubernetes"** starts with a **K**, ends with an **s** and has **8 letters in between**.
+
 ---
 
 ## 3. What is K3s?
@@ -151,7 +152,45 @@ Browser ──> Ingress ──> Service ──> Pod ──> Container
 
 ---
 
-## 7. How Everything Works Together
+## 7. What is a K8s Manifest?
+
+A **K8s Manifest** is a declarative configuration file written in **YAML** (or JSON) that tells K8s what resources to create and how to configure them.
+
+> **Analogy**: If K8s is a construction contractor, the **Manifest** is the **architectural blueprint**. You don't instruct K8s step-by-step *how* to build something; you give it the blueprint (desired state) and K8s makes the cluster match the blueprint automatically.
+
+### Anatomy of a K8s Manifest
+
+Every K8s manifest relies on **4 core top-level fields**:
+
+```yaml
+apiVersion: apps/v1       # 1. Which API group and version to use
+kind: Deployment          # 2. What object to create (Pod, Deployment, Service, Ingress)
+metadata:                 # 3. Data to identify the object (name, labels, namespace)
+  name: my-web-app
+  namespace: dev
+spec:                     # 4. The desired specification and configuration
+  replicas: 3
+  template:
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.25
+        ports:
+        - containerPort: 80
+```
+
+### Core Manifest Fields:
+
+| Field | Purpose | Examples |
+|---|---|---|
+| **`apiVersion`** | Specifies which version of the K8s API is creating this object | `v1`, `apps/v1`, `networking.k8s.io/v1` |
+| **`kind`** | Specifies the type of K8s resource being created | `Pod`, `Deployment`, `Service`, `Ingress` |
+| **`metadata`** | Metadata identifying the resource | `name`, `namespace`, `labels` |
+| **`spec`** | The detailed specifications of your desired state | `replicas`, `containers`, `image`, `ports` |
+
+---
+
+## 8. How Everything Works Together
 
 ### Request Flow
 ```text
@@ -184,7 +223,7 @@ Cluster
 
 ---
 
-## 8. Essential `kubectl` Commands
+## 9. Essential `kubectl` Commands
 
 | Command | Action |
 |---|---|
@@ -197,28 +236,27 @@ Cluster
 
 ---
 
-## 9. Summary Cheat Sheet
+## 10. Summary Cheat Sheet
 
 | Concept | Think of it as |
 |---|---|
-| **Cluster** | The entire Kubernetes environment |
+| **Cluster** | The entire K8s environment |
 | **Node** | A machine (VM or server) in the cluster |
 | **Pod** | A wrapper around one or more containers |
 | **Deployment** | Keeps the desired number of Pods running |
 | **Service** | A stable way to reach Pods inside the cluster |
 | **Ingress** | Routes external HTTP/HTTPS traffic into the cluster |
-| **k3s** | Lightweight Kubernetes distribution ideal for Vagrant VMs |
+| **Manifest** | A YAML blueprint defining your desired cluster resources |
+| **k3s** | Lightweight K8s distribution ideal for Vagrant VMs |
 
 ---
 
-## 10. Concepts Progression in Inception-of-Things
+## 11. Concepts Progression in Inception-of-Things
 
 The project builds up DevOps expertise sequentially:
 
 1. **Containers & Virtualization**: Docker & Vagrant VM provisioning
 2. **Cluster Topology**: Master/Server Node vs. Worker Node setup
-3. **Core Kubernetes Primitives**: Pods, Services and Deployments
+3. **Core K8s Primitives**: Pods, Services and Deployments
 4. **Traffic Management**: Ingress Controllers and Host-based HTTP routing
 5. **GitOps & Continuous Deployment**: Declarative sync with Argo CD & Git repositories
-
-

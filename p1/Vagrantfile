@@ -1,0 +1,24 @@
+Vagrant.configure("2") do |config|
+  config.vm.box = "generic/alma9"
+  config.vm.define "gamado-xS" do |server|
+    server.vm.hostname = "gamado-xS"
+    server.vm.network "private_network", ip: "192.168.56.110"
+    server.vm.provider "virtualbox" do |vb|
+      vb.name   = "gamado-xS"
+      vb.cpus   = 1
+      vb.memory = 1024
+    end
+    #server.vm.provision "shell", path: "scripts/server_setup.sh"
+  end
+
+  config.vm.define "gamado-xSW" do |worker|
+    worker.vm.hostname = "gamado-xSW"
+    worker.vm.network "private_network", ip: "192.168.56.111"
+    worker.vm.provider "virtualbox" do |vb|
+      vb.name   = "gamado-xSW"
+      vb.cpus   = 1
+      vb.memory = 1024
+    end
+    #worker.vm.provision "shell", path: "scripts/worker_setup.sh"
+  end
+end

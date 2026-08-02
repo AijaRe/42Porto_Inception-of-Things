@@ -8,7 +8,7 @@ A reference document explaining the core concepts of **K8s**, **K3s** and **K3d*
 
 **Kubernetes** or **K8s** is a platform for orchestrating, automating and managing containerized applications at scale.
 
-When running hundreds of containers across multiple machines, Kubernetes automatically handles:
+When running hundreds of containers across multiple machines, K8s automatically handles:
 - **Auto-healing**: Starts crashed containers and stops unresponsive ones.
 - **Scaling**: Scales applications up or down based on load.
 - **Load Balancing**: Distributes network traffic evenly across containers.
@@ -18,25 +18,25 @@ When running hundreds of containers across multiple machines, Kubernetes automat
 ### What about Docker Compose?
 
 - **Docker Compose** is designed to manage multi-container applications on a **single machine** (`docker compose up`).
-- **Kubernetes** is designed to manage multi-container applications across a **cluster of multiple machines** with auto-healing, load balancing, zero-downtime updates and automated scaling.
+- **K8s** is designed to manage multi-container applications across a **cluster of multiple machines** with auto-healing, load balancing, zero-downtime updates and automated scaling.
 
-> **Rule of thumb**: Use **Docker Compose** for quick local development on 1 machine. Use **Kubernetes** for managing production workloads across clusters.
+> **Rule of thumb**: Use **Docker Compose** for quick local development on 1 machine. Use **K8s** for managing production workloads across clusters.
 
 ---
 
 ## 2. Why is it called K8s?
 
-**K8s** is a numeronym. The name **"Kubernetes"** starts with a **K**, ends with an **s** and has **8 letters in between**.
+K8s is a numeronym. The name **"Kubernetes"** starts with a **K**, ends with an **s** and has **8 letters in between**.
 ---
 
 ## 3. What is K3s?
 
-Standard Kubernetes is extremely powerful, but it is large, complex and resource-heavy (often consuming several gigabytes of RAM just for control plane components).
+Standard K8s is extremely powerful, but it is large, complex and resource-heavy (often consuming several gigabytes of RAM just for control plane components).
 
 **K3s** is a lightweight, fully compliant Kubernetes distribution.
 
 ### Key Characteristics:
-- **100% Kubernetes-compatible**: Uses the exact same `kubectl` commands and YAML manifests.
+- **100% K8s-compatible**: Uses the exact same `kubectl` commands and YAML manifests.
 - **Lightweight footprint**: Packaged as a single binary under 100 MB with low memory usage.
 - **Simplified Setup**: Strips out legacy cloud-provider drivers and external dependencies.
 - **Use Cases**: Ideal for learning, local development, labs and edge devices (e.g., Raspberry Pi).
@@ -66,7 +66,7 @@ A complete, fully functional K8s cluster is ready in seconds without needing hea
 
 ---
 
-## 5. Relationship & Hierarchy
+## 5. Relationship & Hierarchy (K8s, K3s, K3d)
 
 ```text
                       Kubernetes (K8s)
@@ -82,26 +82,136 @@ A complete, fully functional K8s cluster is ready in seconds without needing hea
 
 ---
 
-## 6. Why use K3s & K3d?
+## 6. Core K8s Building Blocks & Mental Model
 
-A full production K8s cluster is too resource-demanding for typical student hardware. 
+Think of K8s as a hierarchy:
 
-By using **K3s** and **K3d**:
-- **K3s** teaches real-world K8s orchestration and configuration concepts.
-- **K3d** enables rapid cluster creation, testing and teardown using local containers.
+```text
+Cluster
+├── Node
+│   ├── Pod
+│   │   └── Container(s)
+│   └── Pod
+└── Node
+    └── Pod
+```
 
-### Core Concepts Transferred Directly to Production K8s:
-- **Pods** & **Nodes**
-- **Deployments** & **ReplicaSets**
-- **Services** (ClusterIP, NodePort, LoadBalancer)
-- **Ingress Controllers** & Routing Rules
-- **Namespaces** & Resource Isolation
-- **Persistent Volumes** & ConfigMaps
-- **YAML Manifests** & `kubectl` CLI commands
+### 1. Cluster
+The entire K8s environment consisting of one or more physical or VMs working together. In this project:
+- **Server VM**: Manages the cluster (Control Plane)
+- **Worker VM**: Runs user workloads & applications
+
+*Analogy: If K8s is a company, the cluster is the entire company.*
 
 ---
 
-## 7. Concepts Progression in Inception-of-Things
+### 2. Node
+A physical server, VM or cloud instance belonging to the cluster. In this project:
+- `Server VM` → Node
+- `Worker VM` → Node
+
+Check nodes with:
+```bash
+kubectl get nodes
+```
+
+*Analogy: Each node is an office building in the company.*
+
+---
+
+### 3. Pod
+The smallest deployable unit in K8s. A Pod wraps one (or occasionally more) Docker containers. K8s manages Pods rather than containers directly.
+
+---
+
+### 4. Deployment
+Ensures that the desired number of Pods are running and healthy at all times. If a Pod crashes, the Deployment notices and creates a replacement Pod automatically.
+
+*Analogy: A safety manager ensuring the required count of active instances is always maintained.*
+
+---
+
+### 5. Service
+Provides a stable internal IP address and DNS name for Pods whose individual IP addresses change whenever they restart or scale.
+
+```text
+Service ──> Pod 1, Pod 2, Pod 3
+```
+
+*Analogy: A receptionist routing internal requests to whichever room the active workers are currently occupying.*
+
+---
+
+### 6. Ingress
+Manages external HTTP/HTTPS traffic entering the cluster, routing browser or client requests to the correct internal Service based on hostname or URL path.
+
+```text
+Browser ──> Ingress ──> Service ──> Pod ──> Container
+```
+
+---
+
+## 7. How Everything Works Together
+
+### Request Flow
+```text
+Internet
+   │
+   ▼
+Ingress (Host & Path Routing)
+   │
+   ▼
+Service (Stable Endpoint & Load Balancer)
+   │
+   ▼
+Deployment (Lifecycle & Replica Manager)
+   │
+   ▼
+Pod (Container Wrapper)
+   │
+   ▼
+Container (e.g., Nginx, Web App, Redis)
+```
+
+### Physical / Virtual Infrastructure View
+```text
+Cluster
+├── Server Node (Control Plane)
+└── Worker Node
+      └── Pod
+            └── Container
+```
+
+---
+
+## 8. Essential `kubectl` Commands
+
+| Command | Action |
+|---|---|
+| `kubectl get nodes` | Show cluster nodes |
+| `kubectl get pods` | Show running Pods |
+| `kubectl get services` | Show active Services |
+| `kubectl get deployments` | Show active Deployments |
+| `kubectl apply -f app.yaml` | Apply a YAML configuration manifest |
+| `kubectl delete -f app.yaml` | Delete resources specified in a YAML manifest |
+
+---
+
+## 9. Summary Cheat Sheet
+
+| Concept | Think of it as |
+|---|---|
+| **Cluster** | The entire Kubernetes environment |
+| **Node** | A machine (VM or server) in the cluster |
+| **Pod** | A wrapper around one or more containers |
+| **Deployment** | Keeps the desired number of Pods running |
+| **Service** | A stable way to reach Pods inside the cluster |
+| **Ingress** | Routes external HTTP/HTTPS traffic into the cluster |
+| **k3s** | Lightweight Kubernetes distribution ideal for Vagrant VMs |
+
+---
+
+## 10. Concepts Progression in Inception-of-Things
 
 The project builds up DevOps expertise sequentially:
 
@@ -110,4 +220,5 @@ The project builds up DevOps expertise sequentially:
 3. **Core Kubernetes Primitives**: Pods, Services and Deployments
 4. **Traffic Management**: Ingress Controllers and Host-based HTTP routing
 5. **GitOps & Continuous Deployment**: Declarative sync with Argo CD & Git repositories
+
 

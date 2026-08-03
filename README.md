@@ -24,7 +24,7 @@ The project is structured into three parts, each demonstrating progressive conce
 
 ## Getting Started
 
-Each part has its own README with prerequisites, setup steps and teardown instructions:
+Each part has its own README with prerequisites, setup steps, teardown instructions and verification commands to confirm the VMs meet the subject specs:
 
 - **Part 1** — [K3s & Vagrant](./p1/README.md)
 
@@ -42,5 +42,6 @@ Each part has its own README with prerequisites, setup steps and teardown instru
 ## Documentation & Concepts Guide
 
 For detailed explanations of core DevOps and K8s concepts, check out:
+- [Vagrant](./docs/vagrant.md)
 - [Kubernetes Concepts](./docs/k8s_concepts.md)
 - [GitOps, CI/CD & Argo CD Concepts](./docs/gitops_argocd.md)

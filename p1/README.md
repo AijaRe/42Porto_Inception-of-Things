@@ -53,9 +53,6 @@ vagrant ssh gamado-xS
 
 # Connect to the worker node
 vagrant ssh gamado-xSW
-
-# Check that k3s is running in VMs
-k3s kubectl get nodes
 ```
 
 ### 5 — Tear down
@@ -111,29 +108,32 @@ Virtualization features:
   Virtualization type:   full
 ```
 
-### Network — `ifconfig`
+### Network — `ip a` / `ip a show eth1`
 
 Confirms each VM has the correct dedicated IP on `eth1`.
 
+If `ifconfig` is not installed on your machine, use:
+
+```bash
+ip a
+ip a show eth1
+```
+
 **Server (`gamado-xS`)** — expected `192.168.56.110`:
 
-```
-eth1: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
-        inet 192.168.56.110  netmask 255.255.255.0  broadcast 192.168.56.255
-        inet6 fe80::a00:27ff:fe7d:113c  prefixlen 64  scopeid 0x20<link>
-        ether 08:00:27:7d:11:3c  txqueuelen 1000  (Ethernet)
+```text
+2: eth1: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP group default qlen 1000
+    inet 192.168.56.110/24 brd 192.168.56.255 scope global eth1
 ```
 
 **Worker (`gamado-xSW`)** — expected `192.168.56.111`:
 
-```
-eth1: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
-        inet 192.168.56.111  netmask 255.255.255.0  broadcast 192.168.56.255
-        inet6 fe80::a00:27ff:fecd:8e7  prefixlen 64  scopeid 0x20<link>
-        ether 08:00:27:cd:08:e7  txqueuelen 1000  (Ethernet)
+```text
+2: eth1: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP group default qlen 1000
+    inet 192.168.56.111/24 brd 192.168.56.255 scope global eth1
 ```
 
-### K3s node IP — `sudo kubectl get nodes -o wide`
+### K3s node IP — `sudo kubectl get nodes -o wide` / `k get nodes -o wide`
 
 `ifconfig` only confirms the IP is assigned at the OS level. It does **not** tell you which IP K3s actually registered for the node — and these can differ.
 
@@ -143,6 +143,7 @@ Run this **inside the server node** (`vagrant ssh gamado-xS`) to verify K3s boun
 
 ```bash
 sudo k3s kubectl get nodes -o wide
+k get nodes -o wide
 ```
 
 Expected output — `INTERNAL-IP` must match the private network addresses:
@@ -159,11 +160,12 @@ gamado-xsw  Ready    <none>          ...   v1.36.3+k3s1   192.168.56.111   <none
 
 To confirm the server node is running in **controller/server mode**:
 
-1. **Node Role** — `sudo kubectl get nodes -o wide`  
-   Confirms `gamado-xS` has the `control-plane` role:
+1. **Node Role** — `sudo kubectl get nodes -o wide`  / `k get nodes -o wide`
+   Shows detailed information about cluster nodes and confirms `gamado-xS` has the `control-plane` role:
    ```
    NAME        STATUS   ROLES           INTERNAL-IP
-   gamado-xS   Ready    control-plane   192.168.56.110
+   gamado-xs   Ready    control-plane   192.168.56.110
+   gamado-xsw  Ready    <none>          192.168.56.111
    ```
 
 2. **Process & Service** — `ps aux | grep k3s` / `sudo systemctl cat k3s`  

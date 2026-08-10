@@ -36,6 +36,8 @@ Standard K8s is extremely powerful, but it is large, complex and resource-heavy 
 
 **K3s** is a lightweight, fully compliant Kubernetes distribution.
 
+[k3s installation](https://docs.k3s.io/installation/configuration)
+
 ### Key Characteristics:
 - **100% K8s-compatible**: Uses the exact same `kubectl` commands and YAML manifests.
 - **Lightweight footprint**: Packaged as a single binary under 100 MB with low memory usage.

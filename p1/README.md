@@ -53,6 +53,9 @@ vagrant ssh gamado-xS
 
 # Connect to the worker node
 vagrant ssh gamado-xSW
+
+# Check that k3s is running in VMs
+k3s kubectl get nodes
 ```
 
 ### 5 — Tear down

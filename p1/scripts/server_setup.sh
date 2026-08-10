@@ -1,24 +1,27 @@
-#!/bin/bash
+#!/usr/bin/env bash
+
 set -e
 
-# Install k3s server mode
-echo "[INFO-42]  Installing k3s server mode..."
+echo "===> [gamado-xS] Start provisioning Server Node..."
+
+sudo apt-get update && sudo apt-get upgrade -y
+sudo apt-get install curl -y
+
+echo "===> [gamado-xS] Installing K3s"
 
 if [ -f /usr/local/bin/k3s ]; then
-    echo "[INFO] k3s is already installed. Skipping installation."
+    echo "===> [gamado-xS] k3s is already installed. Skipping installation."
 else
-    echo "[INFO-42] Installing k3s server mode..."
-    curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="server" sh -s -
-	echo "[INFO-42] adding permissions to kubeconfig..."
-	sudo chmod 644 /etc/rancher/k3s/k3s.yaml
-    echo "[INFO-42] k3s server installed successfully."
+    curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="server --node-ip=192.168.56.110 --bind-address=192.168.56.110" sh -
+    sudo chmod 644 /etc/rancher/k3s/k3s.yaml
+    echo "===> [gamado-xS] k3s server installed successfully."
 fi
 
 if [ -d /vagrant ]; then
-    echo "[INFO-42] Copying token for joining worker nodes..."
+    echo "===> [gamado-xS] Copying token for joining worker nodes..."
     sudo cat /var/lib/rancher/k3s/server/node-token > /vagrant/node-token
 else
-    echo "[WARN-42] /vagrant is not mounted. Skipping token copy."
+    echo "===> [gamado-xS] /vagrant is not mounted. Skipping token copy."
 fi
 
-echo "[INFO-42]  k3s server setup complete."
+echo "===> [gamado-xS] k3s server setup complete."

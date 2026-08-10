@@ -132,3 +132,49 @@ eth1: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
         inet6 fe80::a00:27ff:fecd:8e7  prefixlen 64  scopeid 0x20<link>
         ether 08:00:27:cd:08:e7  txqueuelen 1000  (Ethernet)
 ```
+
+### K3s node IP — `sudo kubectl get nodes -o wide`
+
+`ifconfig` only confirms the IP is assigned at the OS level. It does **not** tell you which IP K3s actually registered for the node — and these can differ.
+
+VirtualBox VMs always have a first interface (`eth0`) dedicated to NAT (`10.0.2.15`), used for host internet access. If K3s is not explicitly told which interface to bind to, it picks the first one it finds — typically the NAT interface — and registers that IP with the cluster. The result is nodes that appear healthy but are unreachable between each other over the private network, breaking inter-node communication.
+
+Run this **inside the server node** (`vagrant ssh gamado-xS`) to verify K3s bound to the private network IP, not the NAT one:
+
+```bash
+sudo k3s kubectl get nodes -o wide
+```
+
+Expected output — `INTERNAL-IP` must match the private network addresses:
+
+```
+NAME        STATUS   ROLES           AGE   VERSION        INTERNAL-IP      EXTERNAL-IP   OS-IMAGE                         KERNEL-VERSION         CONTAINER-RUNTIME
+gamado-xs   Ready    control-plane   ...   v1.36.3+k3s1   192.168.56.110   <none>        Debian GNU/Linux 12 (bookworm)   6.1.0-29-amd64        containerd://2.3.2-k3s2
+gamado-xsw  Ready    <none>          ...   v1.36.3+k3s1   192.168.56.111   <none>        Debian GNU/Linux 12 (bookworm)   6.1.0-29-amd64        containerd://2.3.2-k3s2
+```
+
+> **What to watch for:** if `INTERNAL-IP` shows `10.0.2.15` instead of `192.168.56.x`, K3s bound to the NAT interface. Fix this by passing `--node-ip` and `--bind-address` to the K3s install command (already applied in `scripts/server_setup.sh`).
+
+### Controller Mode Verification (`gamado-xS`)
+
+To confirm the server node is running in **controller/server mode**:
+
+1. **Node Role** — `sudo kubectl get nodes -o wide`  
+   Confirms `gamado-xS` has the `control-plane` role:
+   ```
+   NAME        STATUS   ROLES           INTERNAL-IP
+   gamado-xS   Ready    control-plane   192.168.56.110
+   ```
+
+2. **Process & Service** — `ps aux | grep k3s` / `sudo systemctl cat k3s`  
+   Confirms K3s runs the `server` command:
+   ```
+   ExecStart=/usr/local/bin/k3s server '--node-ip=192.168.56.110' '--bind-address=192.168.56.110'
+   ```
+
+3. **API Listening Port** — `sudo ss -tlnp | grep 6443`  
+   Confirms `k3s-server` is listening for agent/client connections on port `6443` at `192.168.56.110`:
+   ```
+   LISTEN 0 4096 192.168.56.110:6443 0.0.0.0:* users:(("k3s-server",...))
+   ```
+

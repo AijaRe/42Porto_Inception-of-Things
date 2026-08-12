@@ -3,4 +3,4 @@
 *.tmp
 
 # K3s token
-node-token
+k3s-token

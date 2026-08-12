@@ -11,6 +11,16 @@ Make sure the following tools are installed on your host machine before proceedi
 | [VirtualBox](https://www.virtualbox.org/) | Hypervisor that runs the VMs |
 | [Vagrant](https://www.vagrantup.com/) | Automates VM provisioning |
 
+Resolve setup errors:
+
+VT-x is not available (VERR_VMX_NO_VMX) -->  enable nested virtualization in host machine: `VBoxManage modifyvm "vm-name" --nested-hw-virt on`
+
+VERR_VMX_IN_VMX_ROOT_MODE --> inside VM unload KVM (Kernel-based Virtual Machine): 
+```bash
+sudo modprobe -r kvm_intel
+sudo modprobe -r kvm
+```
+
 ---
 
 ## Usage

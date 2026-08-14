@@ -7,11 +7,11 @@ done
 echo "===> [arepsaS] K3s kubeconfig is ready."
 
 echo "===> [arepsaS] Deploying applications..."
-kubectl apply -f /vagrant/apps/app1/deployment-app1.yaml
-kubectl apply -f /vagrant/apps/app1/service-app1.yaml
+kubectl apply -f /vagrant/apps/app1/app1-deployment.yaml
+kubectl apply -f /vagrant/apps/app1/app1-service.yaml
 
-kubectl apply -f /vagrant/apps/app2/deployment-app2.yaml
-kubectl apply -f /vagrant/apps/app2/service-app2.yaml
+kubectl apply -f /vagrant/apps/app2/app2-deployment.yaml
+kubectl apply -f /vagrant/apps/app2/app2-service.yaml
 
-kubectl apply -f /vagrant/apps/app3/deployment-app3.yaml
-kubectl apply -f /vagrant/apps/app3/service-app3.yaml
+kubectl apply -f /vagrant/apps/app3/app3-deployment.yaml
+kubectl apply -f /vagrant/apps/app3/app3-service.yaml

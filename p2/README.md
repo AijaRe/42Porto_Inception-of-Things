@@ -59,3 +59,6 @@ kubectl get nodes -o wide
 kubectl get pods -A
 kubectl get svc -A
 ```
+
+### Materials
+[IBM What is Ingress](https://www.youtube.com/watch?v=NPFbYpb0I7w)

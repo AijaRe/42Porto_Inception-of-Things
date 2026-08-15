@@ -61,4 +61,6 @@ kubectl get svc -A
 ```
 
 ### Materials
-[IBM What is Ingress](https://www.youtube.com/watch?v=NPFbYpb0I7w)
+[The Coding Gopher - Kubernetes Deployments and Services](https://www.youtube.com/watch?v=z9nYikBIqRA)
+[IBM - What is Ingress](https://www.youtube.com/watch?v=NPFbYpb0I7w)
+[The Coding Gopher - Kubernetes Ingress]>(https://www.youtube.com/watch?v=uGsR9fuBVqU)

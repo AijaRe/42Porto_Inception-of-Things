@@ -15,3 +15,5 @@ kubectl apply -f /vagrant/apps/app2/app2-service.yaml
 
 kubectl apply -f /vagrant/apps/app3/app3-deployment.yaml
 kubectl apply -f /vagrant/apps/app3/app3-service.yaml
+
+kubectl apply -f /vagrant/ingress/ingress.yaml

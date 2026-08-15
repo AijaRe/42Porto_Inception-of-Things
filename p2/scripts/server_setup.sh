@@ -15,7 +15,7 @@ else
     curl -sfL https://get.k3s.io | K3S_KUBECONFIG_MODE="644" INSTALL_K3S_EXEC="server \
   		--node-ip=192.168.56.110 \
   		--bind-address=192.168.56.110 \
-		--disable=traefik \
+		--flannel-iface=eth1 \
 		--disable=servicelb \
 		--disable=metrics-server" sh -
     echo "===> [arepsaS] k3s server installed successfully."

@@ -12,7 +12,6 @@ echo "===> [arepsaS] Installing K3s"
 if [ -f /usr/local/bin/k3s ]; then
     echo "===> [arepsaS] k3s is already installed. Skipping installation."
 else
-	export
     curl -sfL https://get.k3s.io | K3S_KUBECONFIG_MODE="644" INSTALL_K3S_EXEC="server \
   		--node-ip=192.168.56.110 \
   		--bind-address=192.168.56.110 \

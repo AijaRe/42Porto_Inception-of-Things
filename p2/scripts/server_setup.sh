@@ -16,7 +16,6 @@ else
   		--node-ip=192.168.56.110 \
   		--bind-address=192.168.56.110 \
 		--flannel-iface=eth1 \
-		--disable=servicelb \
 		--disable=metrics-server" sh -
     echo "===> [arepsaS] k3s server installed successfully."
 fi

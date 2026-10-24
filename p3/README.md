@@ -5,7 +5,7 @@
 
 ### 1. Environment Setup
 1.1. Create Docker installation script  
-1.2. Create K3d installation script  
+1.2. Create K3d installation script
 1.3. Create a master setup script  
 
 ### 2. Kubernetes Cluster Setup
@@ -22,7 +22,7 @@
 4.2. Deploy version v1 manually for testing  
 
 ### 5. Argo CD Setup
-5.1. Install Argo CD in the argocd namespace  
+5.1. Create a script to install Argo CD in the argocd namespace  
 5.2. Verify Argo CD components are running  
 5.3. Access the Argo CD interface
 

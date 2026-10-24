@@ -60,7 +60,15 @@ kubectl get pods -A
 kubectl get svc -A
 ```
 
+
+### 5. Check ingress
+```bash
+kubectl get ingressclass
+```
+
 ### Materials
 [The Coding Gopher - Kubernetes Deployments and Services](https://www.youtube.com/watch?v=z9nYikBIqRA)
+
 [IBM - What is Ingress](https://www.youtube.com/watch?v=NPFbYpb0I7w)
-[The Coding Gopher - Kubernetes Ingress]>(https://www.youtube.com/watch?v=uGsR9fuBVqU)
+
+[The Coding Gopher - Kubernetes Ingress](https://www.youtube.com/watch?v=uGsR9fuBVqU)

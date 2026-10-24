@@ -41,5 +41,7 @@
 
 ### Materials
 [DEV. Why You Should Use k3d for Local Development.](https://dev.to/cloudx/why-you-should-use-k3d-for-local-development-a-developers-guide-2cp5)
+
 [DevOps Lab. GitOps with Argo CD.](https://albanna-tutorials.com/devops/advanced/a03_gitops.html?utm_source=copilot.com)
+
 [Official docs. Docker image tags.](https://docs.docker.com/reference/cli/docker/image/tag/)

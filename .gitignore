@@ -4,3 +4,7 @@
 
 # K3s token
 k3s-token
+
+**/kubectl*
+
+*.deb

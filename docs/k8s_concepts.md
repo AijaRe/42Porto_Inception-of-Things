@@ -33,9 +33,15 @@ A reference document explaining the core concepts of **K8s**, **K3s**, **K3d**, 
   - [6.6 Networking & Service Types Deep-Dive](#66-networking--service-types-deep-dive)
     - [Pod Networking & CNI](#pod-networking--cni)
     - [Pod Networking Between Nodes in K3s: Flannel](#pod-networking-between-nodes-in-k3s-flannel)
+    - [Choosing Flannel's Interface: --flannel-iface](#choosing-flannels-interface---flannel-iface)
     - [Services](#services)
     - [The 3 Core Service Types:](#the-3-core-service-types)
+    - [How a Service Finds Its Pods: Selector, port and targetPort](#how-a-service-finds-its-pods-selector-port-and-targetport)
   - [6.7 Ingress](#67-ingress)
+    - [Ingress vs Ingress Controller](#ingress-vs-ingress-controller)
+    - [How Traffic Reaches Traefik: servicelb](#how-traffic-reaches-traefik-servicelb)
+    - [The Host Header and the Default Rule](#the-host-header-and-the-default-rule)
+    - [Full Request Flow in p2](#full-request-flow-in-p2)
 - [7. What is a K8s Manifest?](#7-what-is-a-k8s-manifest)
   - [Core Manifest Fields:](#core-manifest-fields)
   - [Complete End-to-End Manifest Example (Deployment + Service + Ingress)](#complete-end-to-end-manifest-example-deployment--service--ingress)
@@ -310,6 +316,22 @@ Every Pod in K8s receives its own unique IP address. Kubernetes delegates intern
 
 K3s uses **Flannel** as its default CNI. Flannel gives each node a range of pod IPs (e.g., `10.42.0.0/24` for the server, `10.42.1.0/24` for the worker). When a pod on one node talks to a pod on another node, Flannel wraps the packet inside a **VXLAN** tunnel (UDP port `8472`) and sends it over the network between the nodes.
 
+#### Choosing Flannel's Interface: `--flannel-iface`
+
+Each VirtualBox VM has two network interfaces:
+- **`eth0` (NAT)**: only used to reach the internet through the host. VirtualBox gives **every** VM the same address there, `10.0.2.15`, so VMs cannot reach each other through it.
+- **`eth1` (private network)**: the network that connects the VMs and the host, with one address per VM (`192.168.56.x`).
+
+By default, Flannel builds its tunnel on the interface of the default route, which is `eth0`. The `--node-ip` flag does **not** change that: it only sets the node's `INTERNAL-IP`. Passing **`--flannel-iface=eth1`** makes Flannel use the private network.
+
+The p2 server script sets this flag. Part 2 has a single node, so no pod traffic crosses nodes, but it keeps the cluster network on the right interface from the start.
+
+Check which address Flannel uses on a node:
+
+```bash
+ip -d link show flannel.1 | grep -o "local [0-9.]* dev [a-z0-9]*"   # p2: local 192.168.56.110 dev eth1
+```
+
 #### Services
 A **Service** provides a stable IP address, DNS entry, and load balancing for Pods whose individual IP addresses change dynamically whenever they restart or scale.
 
@@ -329,6 +351,26 @@ External/Internal Request ──> Service ──> Pod 1, Pod 2, Pod 3
 3. **`LoadBalancer`**:
    - Integrates with external cloud provider load balancers (AWS ELB, GCP LB, Azure LB) or bare-metal load balancers (MetalLB) to direct external internet traffic into the cluster.
 
+#### How a Service Finds Its Pods: Selector, `port` and `targetPort`
+
+A Service does not list pods by name. It uses a **label selector**: every pod whose labels match becomes a backend (an *endpoint*) of the Service. In p2:
+
+```yaml
+# Service app2-svc                    # Pods created by Deployment app2-deploy
+selector:                             template:
+  app: app2          ◄── matches ──►    metadata:
+ports:                                    labels:
+- port: 80          # Service port          app: app2
+  targetPort: 8080  # container port
+```
+
+- **`port`**: the port the Service listens on inside the cluster (`app2-svc:80`).
+- **`targetPort`**: the port of the container the traffic is forwarded to (`8080`, where `hello-kubernetes` listens).
+
+With `replicas: 3`, the Service has **3 endpoints** and spreads requests between them. This is visible with `kubectl describe ingress` or `kubectl get endpointslices -l kubernetes.io/service-name=app2-svc`, and by repeating a request: the pod name shown by `hello-kubernetes` changes.
+
+When a pod dies and its Deployment recreates it with a new IP, the new pod carries the same label, so the Service picks it up automatically.
+
 ---
 
 ### 6.7 Ingress
@@ -336,6 +378,61 @@ Manages external HTTP/HTTPS traffic entering the cluster, routing browser or cli
 
 ```text
 Browser ──> Ingress ──> Service ──> Pod ──> Container
+```
+
+#### Ingress vs Ingress Controller
+
+An **Ingress** is only a set of rules (a YAML object): "requests for host X go to Service Y". It does nothing by itself. An **Ingress controller** is the program that reads those rules and actually routes the traffic.
+
+K3s ships **Traefik** as its Ingress controller. That is why Part 2 keeps Traefik enabled, while Part 1 disables it.
+
+| Object | What it is | In p2 |
+|---|---|---|
+| **Ingress** | Routing rules by host and path | `app1-ingress` (holds the rules for all three apps) |
+| **Ingress controller** | Program that applies the rules | Traefik pod in `kube-system` |
+| **IngressClass** | Tells which controller handles an Ingress | `traefik`, marked as default class |
+
+The p2 Ingress has no `ingressClassName`, so `kubectl get ingress` shows `CLASS <none>`. It still works because K3s registers `traefik` as the **default** IngressClass (`ingressclass.kubernetes.io/is-default-class: "true"`), and the default controller takes every Ingress without a class.
+
+#### How Traffic Reaches Traefik: servicelb
+
+Traefik itself runs in a pod, with a pod IP the host cannot reach. To expose it, K3s creates a Service of type **`LoadBalancer`** for Traefik. On a cloud, a `LoadBalancer` Service gets an external load balancer. On a VM there is none, so K3s uses **servicelb** (Klipper): it runs a small `svclb-traefik-*` pod on the node that opens ports `80` and `443` on the node's IP and forwards them to Traefik.
+
+```bash
+kubectl get svc -n kube-system traefik     # TYPE LoadBalancer, EXTERNAL-IP 192.168.56.110
+kubectl get pods -n kube-system | grep svclb
+```
+
+#### The Host Header and the Default Rule
+
+A browser always sends the name it was asked to open in the HTTP **`Host`** header. That is how one IP can serve several sites: Traefik reads `Host` and picks the matching rule. `curl -H "Host: app1.com" 192.168.56.110` fakes that header without needing DNS.
+
+The p2 Ingress has three rules:
+
+| Rule | Matches | Goes to |
+|---|---|---|
+| `host: app1.com` | `Host: app1.com` | `app1-svc` |
+| `host: app2.com` | `Host: app2.com` | `app2-svc` |
+| no `host` | anything else, including the bare IP | `app3-svc` |
+
+A rule **without `host`** matches every host, so it acts as the fallback; `kubectl describe ingress` shows it as `*`. Kubernetes also has a dedicated field for this, **`spec.defaultBackend`**, used when no rule matches at all. Both give the same result here; `Default backend: <default>` in `kubectl describe ingress` only means that field is not set.
+
+#### Full Request Flow in p2
+
+```text
+Host machine:  curl -H "Host: app2.com" 192.168.56.110
+      │
+      ▼
+192.168.56.110:80 ── svclb-traefik pod (servicelb) opens port 80 on the node
+      │
+      ▼
+Traefik (Ingress controller) ── reads Host: app2.com, matches the Ingress rule
+      │
+      ▼
+Service app2-svc:80 ── picks one of its 3 endpoints
+      │
+      ▼
+Pod app2-deploy-xxxxx:8080 ── hello-kubernetes answers "Hello from app2"
 ```
 
 ---
@@ -534,6 +631,9 @@ kubectl rollout undo deployment/myapp-deployment    # Rollback to previous deplo
 | **K3s server / agent** | Same binary: control plane + workloads / workloads only |
 | **Node token** | Secret an agent presents to join the cluster |
 | **Kubeconfig** | File telling `kubectl` where the API is and which credentials to use |
+| **Ingress controller** | Program that applies Ingress rules (Traefik in K3s) |
+| **IngressClass** | Links an Ingress to the controller that handles it |
+| **servicelb** | K3s implementation of `LoadBalancer` Services on bare metal / VMs |
 
 ---
 
@@ -570,3 +670,9 @@ The 42 School **Inception-of-Things (IoT)** project builds up DevOps expertise s
 - **Kubernetes Components**: [https://kubernetes.io/docs/concepts/overview/components/](https://kubernetes.io/docs/concepts/overview/components/)
 - **Kubeconfig Files**: [https://kubernetes.io/docs/concepts/configuration/organize-cluster-access-kubeconfig/](https://kubernetes.io/docs/concepts/configuration/organize-cluster-access-kubeconfig/)
 - **Well-Known Labels (`node-role.kubernetes.io`)**: [https://kubernetes.io/docs/reference/labels-annotations-taints/](https://kubernetes.io/docs/reference/labels-annotations-taints/)
+- **Service**: [https://kubernetes.io/docs/concepts/services-networking/service/](https://kubernetes.io/docs/concepts/services-networking/service/)
+- **Deployments**: [https://kubernetes.io/docs/concepts/workloads/controllers/deployment/](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/)
+- **Ingress**: [https://kubernetes.io/docs/concepts/services-networking/ingress/](https://kubernetes.io/docs/concepts/services-networking/ingress/)
+- **Ingress Controllers**: [https://kubernetes.io/docs/concepts/services-networking/ingress-controllers/](https://kubernetes.io/docs/concepts/services-networking/ingress-controllers/)
+- **K3s Networking Services (Traefik, servicelb)**: [https://docs.k3s.io/networking/networking-services](https://docs.k3s.io/networking/networking-services)
+- **Traefik Kubernetes Ingress Provider**: [https://doc.traefik.io/traefik/providers/kubernetes-ingress/](https://doc.traefik.io/traefik/providers/kubernetes-ingress/)

@@ -20,6 +20,7 @@ local labs and development.
   - [Public Network / Bridge](#public-network--bridge)
 - [10. Installing Apache With A Shell Provisioner](#10-installing-apache-with-a-shell-provisioner)
 - [11. Inline Shell Provisioning](#11-inline-shell-provisioning)
+  - [Named Provisioners](#named-provisioners)
 - [12. Provisioning With Ansible](#12-provisioning-with-ansible)
 - [13. Multiple VMs In One Vagrantfile](#13-multiple-vms-in-one-vagrantfile)
   - [Sharing Files Between VMs: The Synced Folder](#sharing-files-between-vms-the-synced-folder)
@@ -425,6 +426,24 @@ end
 ```
 
 Use external scripts when the setup grows. They are easier to read and reuse.
+
+### Named Provisioners
+
+A provisioner can be given a **name**. This makes it possible to re-run only one step instead of all of them:
+
+```ruby
+config.vm.provision "ServerSetup", type: "shell", path: "scripts/server_setup.sh"
+config.vm.provision "DeployApps",  type: "shell", path: "scripts/deploy_apps.sh"
+```
+
+```bash
+vagrant provision                              # runs every provisioner again
+vagrant provision --provision-with DeployApps  # runs only DeployApps
+```
+
+Part 2 uses this: after editing the YAML manifests, `vagrant provision --provision-with DeployApps` applies them again without reinstalling K3s.
+
+Provisioners run **in the order they are declared**, and by default only on the first `vagrant up`. Later runs need `vagrant provision` or `vagrant up --provision`.
 
 ## 12. Provisioning With Ansible
 
@@ -855,6 +874,7 @@ building machines anymore. I am writing down how machines should be built.
 - **Multi-Machine**: [https://developer.hashicorp.com/vagrant/docs/multi-machine](https://developer.hashicorp.com/vagrant/docs/multi-machine)
 - **Private Networks**: [https://developer.hashicorp.com/vagrant/docs/networking/private_network](https://developer.hashicorp.com/vagrant/docs/networking/private_network)
 - **Synced Folders**: [https://developer.hashicorp.com/vagrant/docs/synced-folders](https://developer.hashicorp.com/vagrant/docs/synced-folders)
+- **Provisioning Basics (named provisioners)**: [https://developer.hashicorp.com/vagrant/docs/provisioning/basic_usage](https://developer.hashicorp.com/vagrant/docs/provisioning/basic_usage)
 - **Shell Provisioner**: [https://developer.hashicorp.com/vagrant/docs/provisioning/shell](https://developer.hashicorp.com/vagrant/docs/provisioning/shell)
 - **VirtualBox Provider**: [https://developer.hashicorp.com/vagrant/docs/providers/virtualbox](https://developer.hashicorp.com/vagrant/docs/providers/virtualbox)
 - **VirtualBox Manual**: [https://www.virtualbox.org/manual/](https://www.virtualbox.org/manual/)

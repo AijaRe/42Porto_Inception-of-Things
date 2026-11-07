@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-echo "Installing dependencies..."
+echo "===> Installing dependencies..."
 sudo apt-get update
 
 CLUSTER_NAME="argonauts"
@@ -12,8 +12,26 @@ fi
 
 if ! command -v docker > /dev/null; then
 	# Uninstall conflicting docker packages
-	#sudo apt remove $(dpkg --get-selections docker.io docker-compose docker-doc docker-buildx podman-docker containerd runc | cut -f1)
-	sudo apt-get install -y docker.io
+	sudo apt remove $(dpkg --get-selections docker.io docker-compose docker-doc docker-buildx podman-docker containerd runc | cut -f1)
+	#sudo apt-get install -y docker.io
+	# Add Docker's official GPG key:
+	sudo apt install ca-certificates curl -y
+	sudo install -m 0755 -d /etc/apt/keyrings
+	sudo curl -fsSL https://download.docker.com/linux/debian/gpg -o /etc/apt/keyrings/docker.asc
+	sudo chmod a+r /etc/apt/keyrings/docker.asc
+
+	# Add the repository to Apt sources:
+	sudo tee /etc/apt/sources.list.d/docker.sources <<-EOF
+	Types: deb
+	URIs: https://download.docker.com/linux/debian
+	Suites: $(. /etc/os-release && echo "$VERSION_CODENAME")
+	Components: stable
+	Architectures: $(dpkg --print-architecture)
+	Signed-By: /etc/apt/keyrings/docker.asc
+	EOF
+
+	sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+	sudo systemctl enable --now docker
 fi
 
 if ! id -nG $USER | grep -q docker; then
@@ -29,8 +47,8 @@ if ! command -v kubectl > /dev/null; then
 	sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
 fi
 
-if ! sudo k3d cluster list | grep -q "$CLUSTER_NAME"; then
-	sudo k3d cluster create "$CLUSTER_NAME"
-	export KUBECONFIG="$(sudo k3d kubeconfig write "$CLUSTER_NAME")"
+if ! k3d cluster list | grep -q "$CLUSTER_NAME"; then
+	k3d cluster create "$CLUSTER_NAME"
+	export KUBECONFIG="$(k3d kubeconfig write "$CLUSTER_NAME")"
 fi
 

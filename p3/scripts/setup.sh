@@ -15,7 +15,7 @@ if ! command -v docker > /dev/null; then
 	sudo apt remove $(dpkg --get-selections docker.io docker-compose docker-doc docker-buildx podman-docker containerd runc | cut -f1)
 	#sudo apt-get install -y docker.io
 	# Add Docker's official GPG key:
-	sudo apt install ca-certificates curl -y
+	sudo apt install ca-certificates -y
 	sudo install -m 0755 -d /etc/apt/keyrings
 	sudo curl -fsSL https://download.docker.com/linux/debian/gpg -o /etc/apt/keyrings/docker.asc
 	sudo chmod a+r /etc/apt/keyrings/docker.asc
@@ -30,6 +30,7 @@ if ! command -v docker > /dev/null; then
 	Signed-By: /etc/apt/keyrings/docker.asc
 	EOF
 
+	sudo apt-get update
 	sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 	sudo systemctl enable --now docker
 fi
@@ -53,15 +54,25 @@ if ! k3d cluster list | grep -q "$CLUSTER_NAME"; then
 		--port "8443:443@loadbalancer"
 fi
 
+# connect kubectl to the k3d cluster
 if ! [ -f ~/.kube/config ]; then
 	mkdir -p ~/.kube
-	k3d kubeconfig get argonauts > ~/.kube/config
+	k3d kubeconfig get "$CLUSTER_NAME" > ~/.kube/config
 fi
 
-k3d kubeconfig merge "$CLUSTER_NAME" --kubeconfig-switch-context
+# k3d kubeconfig merge "$CLUSTER_NAME" --kubeconfig-switch-context
 
 kubectl create namespace argocd --dry-run=client -o yaml | kubectl apply -f -
 kubectl create namespace dev --dry-run=client -o yaml | kubectl apply -f -
+
+kubectl apply -n argocd --server-side --force-conflicts -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+
+echo "===> Waiting for Argo CD API server to be ready..."
+kubectl -n argocd rollout status deployment/argocd-server --timeout=300s
+
+echo "===> ArgoCD username: admin"
+echo "===> Initial ArgoCD password:"
+kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d; echo
 
 
 echo "===> Setup complete."

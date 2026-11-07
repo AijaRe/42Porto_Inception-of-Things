@@ -6,7 +6,7 @@
 ### 1. Environment Setup
 1.1. Create Docker installation script  
 1.2. Create K3d installation script
-1.3. Create a master setup script  
+1.3. Create kubectl installation script
 
 ### 2. Kubernetes Cluster Setup
 2.1. Create a K3d cluster  

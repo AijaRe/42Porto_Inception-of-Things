@@ -28,11 +28,6 @@ sudo rm -f /etc/apt/sources.list.d/docker.list
 sudo rm -f /etc/apt/sources.list.d/docker.sources
 sudo rm -f /etc/apt/keyrings/docker.asc
 
-echo "===> Running apt cleanup..."
-sudo apt-get autoremove -y
-sudo apt-get autoclean -y
-sudo apt-get update
-
 echo "===> Removing k3d binary..."
 sudo rm -f /usr/local/bin/k3d
 

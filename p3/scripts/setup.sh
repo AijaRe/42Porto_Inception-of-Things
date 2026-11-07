@@ -48,7 +48,21 @@ if ! command -v kubectl > /dev/null; then
 fi
 
 if ! k3d cluster list | grep -q "$CLUSTER_NAME"; then
-	k3d cluster create "$CLUSTER_NAME"
-	export KUBECONFIG="$(k3d kubeconfig write "$CLUSTER_NAME")"
+	k3d cluster create "$CLUSTER_NAME" \
+		--port "8080:80@loadbalancer" \
+		--port "8443:443@loadbalancer"
 fi
+
+if ! [ -f ~/.kube/config ]; then
+	mkdir -p ~/.kube
+	k3d kubeconfig get argonauts > ~/.kube/config
+fi
+
+k3d kubeconfig merge "$CLUSTER_NAME" --kubeconfig-switch-context
+
+kubectl create namespace argocd --dry-run=client -o yaml | kubectl apply -f -
+kubectl create namespace dev --dry-run=client -o yaml | kubectl apply -f -
+
+
+echo "===> Setup complete."
 

@@ -42,7 +42,7 @@ vagrant up
 ```
 
 Vagrant will:
-1. Download the **`generic/alma9`** base box (AlmaLinux 9) if not already cached.
+1. Download the **`debian/bookworm64`** base box (Debian 12) if not already cached.
 2. Create and configure two VMs:
    - **`gamado-xS`** — K3s Server node at `192.168.56.110` (1 CPU / 1 GB RAM)
    - **`gamado-xSW`** — K3s Worker/Agent node at `192.168.56.111` (1 CPU / 1 GB RAM)
@@ -177,6 +177,10 @@ To confirm the server node is running in **controller/server mode**:
    gamado-xs   Ready    control-plane   192.168.56.110
    gamado-xsw  Ready    <none>          192.168.56.111
    ```
+
+   > **Why does the worker show `<none>` under ROLES?**
+   > The ROLES column is not a real property of the node. `kubectl` builds it from labels named `node-role.kubernetes.io/<role>`. K3s adds `node-role.kubernetes.io/control-plane` only to server nodes. An agent joins the cluster without any role label, so it shows `<none>`. This is expected: the worker still receives and runs pods normally.
+   > To display `worker` instead (purely cosmetic), run on the server: `k label node gamado-xsw node-role.kubernetes.io/worker=worker`
 
 2. **Process & Service** — `ps aux | grep k3s` / `sudo systemctl cat k3s`  
    Confirms K3s runs the `server` command:

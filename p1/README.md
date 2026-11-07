@@ -2,6 +2,25 @@
 
 This section walks you through spinning up the two-node K3s cluster defined in `p1`.
 
+## Index
+
+- [Prerequisites](#prerequisites)
+- [Usage](#usage)
+  - [1 — Enter the p1 directory](#1--enter-the-p1-directory)
+  - [2 — Boot the VMs](#2--boot-the-vms)
+  - [3 — Verify the VMs are running](#3--verify-the-vms-are-running)
+  - [4 — SSH into a VM](#4--ssh-into-a-vm)
+  - [5 — Tear down](#5--tear-down)
+- [Concepts Behind Part 1](#concepts-behind-part-1)
+- [Verification Commands](#verification-commands)
+  - [Memory — free -h](#memory--free--h)
+  - [CPU — lscpu](#cpu--lscpu)
+  - [Network — ip a / ip a show eth1](#network--ip-a--ip-a-show-eth1)
+  - [K3s node IP — sudo kubectl get nodes -o wide / k get nodes -o wide](#k3s-node-ip--sudo-kubectl-get-nodes--o-wide--k-get-nodes--o-wide)
+  - [Controller Mode Verification (gamado-xS)](#controller-mode-verification-gamado-xs)
+
+---
+
 ## Prerequisites
 
 Make sure the following tools are installed on your host machine before proceeding:
@@ -78,6 +97,23 @@ To destroy them completely and free disk space:
 ```bash
 vagrant destroy -f
 ```
+
+---
+
+## Concepts Behind Part 1
+
+Review these before the defense. Each link goes to the detailed explanation in `docs/`:
+
+| Question | Where to read |
+| :--- | :--- |
+| What is the difference between the server and the agent? | [Server and Agent Modes](../docs/k8s_concepts.md#server-and-agent-modes) |
+| How does the worker join the cluster? What is the token? | [How an Agent Joins the Cluster](../docs/k8s_concepts.md#how-an-agent-joins-the-cluster) |
+| How does the token go from one VM to the other? | [Sharing Files Between VMs](../docs/vagrant.md#sharing-files-between-vms-the-synced-folder) |
+| Why are Traefik, servicelb and metrics-server disabled? | [Bundled Components Disabled in p1](../docs/k8s_concepts.md#bundled-components-disabled-in-p1) |
+| What runs on the server and what runs on the worker? | [What Runs on Each Node](../docs/k8s_concepts.md#what-runs-on-each-node) |
+| How do pods on different nodes talk to each other? | [Flannel](../docs/k8s_concepts.md#pod-networking-between-nodes-in-k3s-flannel) |
+| Why does `kubectl` only work on the server? | [Kubeconfig](../docs/k8s_concepts.md#kubeconfig-how-kubectl-finds-the-cluster) |
+| Why does the worker show `<none>` under ROLES? | [Controller Mode Verification](#controller-mode-verification-gamado-xs) |
 
 ---
 

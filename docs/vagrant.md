@@ -4,6 +4,41 @@ This guide is for a dev who wants to understand what Vagrant is,
 why it is useful and how to use it to create repeatable virtual machines for
 local labs and development.
 
+## Index
+
+- [1. What Vagrant Does](#1-what-vagrant-does)
+- [2. Important Vocabulary](#2-important-vocabulary)
+- [3. What I Need To Install](#3-what-i-need-to-install)
+- [4. First Useful Commands](#4-first-useful-commands)
+- [5. My First Vagrant Project](#5-my-first-vagrant-project)
+- [6. A Minimal Vagrantfile](#6-a-minimal-vagrantfile)
+- [7. Using VirtualBox Without Opening A GUI Window](#7-using-virtualbox-without-opening-a-gui-window)
+- [8. Configuring CPU, Memory And Name](#8-configuring-cpu-memory-and-name)
+- [9. Networking Basics](#9-networking-basics)
+  - [Port Forwarding](#port-forwarding)
+  - [Private Network](#private-network)
+  - [Public Network / Bridge](#public-network--bridge)
+- [10. Installing Apache With A Shell Provisioner](#10-installing-apache-with-a-shell-provisioner)
+- [11. Inline Shell Provisioning](#11-inline-shell-provisioning)
+- [12. Provisioning With Ansible](#12-provisioning-with-ansible)
+- [13. Multiple VMs In One Vagrantfile](#13-multiple-vms-in-one-vagrantfile)
+  - [Sharing Files Between VMs: The Synced Folder](#sharing-files-between-vms-the-synced-folder)
+- [14. Example Lab: Load Balancer And Web Servers](#14-example-lab-load-balancer-and-web-servers)
+- [15. Snapshots](#15-snapshots)
+- [16. Packaging Your Own Box](#16-packaging-your-own-box)
+- [17. Troubleshooting Notes](#17-troubleshooting-notes)
+  - [Vagrant Cannot Find box.ovf](#vagrant-cannot-find-boxovf)
+  - [VirtualBox Requires A License Agreement](#virtualbox-requires-a-license-agreement)
+  - [rsync Could Not Be Found](#rsync-could-not-be-found)
+  - [CentOS 7 Yum Mirrors Fail](#centos-7-yum-mirrors-fail)
+  - [Validate The Vagrantfile](#validate-the-vagrantfile)
+  - [Check VirtualBox VMs](#check-virtualbox-vms)
+- [18. Helpful Aliases](#18-helpful-aliases)
+- [19. Suggested Learning Path](#19-suggested-learning-path)
+- [20. Quick Reference](#20-quick-reference)
+- [21. Beginner Mental Model](#21-beginner-mental-model)
+- [22. References](#22-references)
+
 ## 1. What Vagrant Does
 
 Vagrant is a tool for creating and managing VMs from code.
@@ -484,6 +519,39 @@ Stop only one VM:
 vagrant halt vm_1
 ```
 
+### Sharing Files Between VMs: The Synced Folder
+
+By default, Vagrant mounts the project directory (the folder that contains the `Vagrantfile`) inside every VM at **`/vagrant`**.
+
+```text
+Host:  ~/Inception-of-Things/p1/   ◄──── same files ────►   VM: /vagrant/
+```
+
+This is called a **synced folder**. Since all VMs of a `Vagrantfile` mount the same host folder, it is also the simplest way to pass files **between** VMs:
+
+1. One VM writes a file to `/vagrant/`.
+2. The file appears in the project folder on the host.
+3. The other VM sees it in its own `/vagrant/`.
+
+In p1, this is how the K3s **node token** goes from the server to the worker: the server copies it to `/vagrant/k3s-token` and the worker waits for that file before joining. This is also why `k3s-token` appears in the `p1` folder on the host and is listed in `.gitignore`: it is a secret and must not be committed.
+
+How the folder is synced depends on the box and provider. It can be a live share (VirtualBox shared folders, NFS) or a one-time copy (`rsync`). With `rsync`, changes only travel when Vagrant syncs, which matters if a VM is waiting for a file written by another. In p1, `mount` shows `type vboxsf`: a live VirtualBox shared folder, so the token written by the server appears immediately for the worker.
+
+Check it inside a VM:
+
+```bash
+ls /vagrant
+mount | grep vagrant
+```
+
+Configure or disable it in the `Vagrantfile`:
+
+```ruby
+config.vm.synced_folder ".", "/vagrant"                  # default behavior
+config.vm.synced_folder "./shared", "/home/vagrant/shared" # custom folder
+config.vm.synced_folder ".", "/vagrant", disabled: true  # disable it
+```
+
 ## 14. Example Lab: Load Balancer And Web Servers
 
 A more advanced lab can create:
@@ -779,3 +847,14 @@ want.
 
 Once that clicks, Vagrant becomes much less mysterious: I am not manually
 building machines anymore. I am writing down how machines should be built.
+
+## 22. References
+
+- **Vagrant Documentation**: [https://developer.hashicorp.com/vagrant/docs](https://developer.hashicorp.com/vagrant/docs)
+- **Vagrantfile**: [https://developer.hashicorp.com/vagrant/docs/vagrantfile](https://developer.hashicorp.com/vagrant/docs/vagrantfile)
+- **Multi-Machine**: [https://developer.hashicorp.com/vagrant/docs/multi-machine](https://developer.hashicorp.com/vagrant/docs/multi-machine)
+- **Private Networks**: [https://developer.hashicorp.com/vagrant/docs/networking/private_network](https://developer.hashicorp.com/vagrant/docs/networking/private_network)
+- **Synced Folders**: [https://developer.hashicorp.com/vagrant/docs/synced-folders](https://developer.hashicorp.com/vagrant/docs/synced-folders)
+- **Shell Provisioner**: [https://developer.hashicorp.com/vagrant/docs/provisioning/shell](https://developer.hashicorp.com/vagrant/docs/provisioning/shell)
+- **VirtualBox Provider**: [https://developer.hashicorp.com/vagrant/docs/providers/virtualbox](https://developer.hashicorp.com/vagrant/docs/providers/virtualbox)
+- **VirtualBox Manual**: [https://www.virtualbox.org/manual/](https://www.virtualbox.org/manual/)

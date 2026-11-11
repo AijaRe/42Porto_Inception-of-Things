@@ -174,15 +174,39 @@ kubectl get all -n dev               # wil-playground pod, Deployment and Servic
 
 ## Project Plan
 
-| Step | Status |
-| :--- | :---: |
-| 1. Environment setup (Docker, K3d, kubectl) | ✅ |
-| 2. K3d cluster and namespaces `argocd` / `dev` | ✅ |
-| 3. Public GitHub repo with the manifests | ✅ |
-| 4. Manual deploy of v1 | ⏳ |
-| 5. Argo CD installed and reachable | ✅ |
-| 6. Argo CD `Application` with automatic sync | ⏳ |
-| 7. v1 → v2 deployed automatically by Argo CD | ⏳ |
+### 1. Environment Setup
+- [x] 1.1. Create Docker installation script
+- [x] 1.2. Create K3d installation script
+- [x] 1.3. Create kubectl installation script
+
+### 2. Kubernetes Cluster Setup
+- [x] 2.1. Create a K3d cluster
+- [x] 2.2. Verify cluster access with kubectl
+- [x] 2.3. Create required namespaces (`argocd`, `dev`)
+
+### 3. Git Repository Setup
+- [x] 3.1. Create a public GitHub repository ([gabzaf/gamado-x-iot](https://github.com/gabzaf/gamado-x-iot))
+- [x] 3.2. Add Kubernetes manifests to the repository
+
+### 4. Application Deployment Test
+- [x] 4.1. Configure Wil's Playground application (`wil42/playground:v1`)
+- [ ] 4.2. Deploy version v1 manually for testing
+
+### 5. Argo CD Setup
+- [x] 5.1. Create a script to install Argo CD in the `argocd` namespace
+- [x] 5.2. Verify Argo CD components are running
+- [x] 5.3. Access the Argo CD interface
+
+### 6. GitOps Configuration
+- [ ] 6.1. Create an Argo CD `Application` resource
+- [ ] 6.2. Connect Argo CD to the GitHub repository
+- [ ] 6.3. Enable automatic synchronization
+
+### 7. Continuous Deployment
+- [ ] 7.1. Deploy application version v1 through Argo CD
+- [ ] 7.2. Update configuration to version v2
+- [ ] 7.3. Push changes to GitHub
+- [ ] 7.4. Verify automatic deployment by Argo CD
 
 ---
 

@@ -27,6 +27,8 @@ The project is structured into three parts, each demonstrating progressive conce
 Each part has its own README with prerequisites, setup steps, teardown instructions and verification commands to confirm the VMs meet the subject specs:
 
 - **Part 1** — [K3s & Vagrant](./p1/README.md)
+- **Part 2** — [K3s & Multi-App Routing](./p2/README.md)
+- **Part 3** — [K3d & Argo CD (GitOps)](./p3/README.md) *(work in progress)*
 
 ---
 

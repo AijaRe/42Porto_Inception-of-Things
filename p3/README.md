@@ -123,6 +123,7 @@ Manual deploy of v1 (plan step 4):
 ```bash
 kubectl apply -f https://raw.githubusercontent.com/gabzaf/gamado-x-iot/main/manifests/deployment.yaml
 kubectl apply -f https://raw.githubusercontent.com/gabzaf/gamado-x-iot/main/manifests/service.yaml
+kubectl -n dev rollout status deployment/wil-playground   # wait: the first image pull takes a while
 kubectl -n dev port-forward svc/wil-playground 8888:8888
 curl http://localhost:8888/    # {"status":"ok", "message": "v1"}
 ```
@@ -190,7 +191,7 @@ kubectl get all -n dev               # wil-playground pod, Deployment and Servic
 
 ### 4. Application Deployment Test
 - [x] 4.1. Configure Wil's Playground application (`wil42/playground:v1`)
-- [ ] 4.2. Deploy version v1 manually for testing
+- [x] 4.2. Deploy version v1 manually for testing
 
 ### 5. Argo CD Setup
 - [x] 5.1. Create a script to install Argo CD in the `argocd` namespace

@@ -32,7 +32,11 @@ if ! command -v docker > /dev/null; then
 
 	sudo apt-get update
 	sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
-	sudo systemctl enable --now docker
+fi
+
+# Docker may be installed but stopped/disabled (e.g. after fclean)
+if ! systemctl is-active --quiet docker; then
+	sudo systemctl enable --now docker.socket docker
 fi
 
 if ! id -nG $USER | grep -q docker; then

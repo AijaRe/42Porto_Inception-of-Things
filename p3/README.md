@@ -5,7 +5,7 @@
 
 ### 1. Environment Setup
 1.1. Create Docker installation script  
-1.2. Create K3d installation script
+1.2. Create K3d installation script  
 1.3. Create kubectl installation script
 
 ### 2. Kubernetes Cluster Setup
@@ -14,8 +14,8 @@
 2.3. Create required namespaces
 
 ### 3. Git Repository Setup
-3.1. Create a public GitHub repository  
-3.3. Add Kubernetes manifests to the repository
+3.1. Create a public GitHub repository ([gabzaf/gamado-x-iot](https://github.com/gabzaf/gamado-x-iot))  
+3.2. Add Kubernetes manifests to the repository
 
 ### 4. Application Deployment Test
 4.1. Configure Wil's Playground application  

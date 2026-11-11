@@ -17,6 +17,24 @@
 3.1. Create a public GitHub repository ([gabzaf/gamado-x-iot](https://github.com/gabzaf/gamado-x-iot))  
 3.2. Add Kubernetes manifests to the repository
 
+The repository was created and filled from the terminal with the GitHub CLI (`gh`):
+
+```bash
+gh repo create gamado-x-iot --public --clone && cd gamado-x-iot
+mkdir -p manifests            # deployment.yaml + service.yaml (wil42/playground:v1, namespace dev)
+git add manifests && git commit -m "add wil-playground v1 manifests"
+git branch -M main && git push -u origin main
+```
+
+Check that it is public and holds the manifests:
+
+```bash
+gh api repos/gabzaf/gamado-x-iot --jq '.visibility, .default_branch'
+gh api repos/gabzaf/gamado-x-iot/contents/manifests --jq '.[].name'
+```
+
+More `gh` commands (collaborators, PRs, `gh api`, GitOps path): [gabzaf/gh-cheatsheet](https://github.com/gabzaf/gh-cheatsheet).
+
 ### 4. Application Deployment Test
 4.1. Configure Wil's Playground application  
 4.2. Deploy version v1 manually for testing  

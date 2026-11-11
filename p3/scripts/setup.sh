@@ -71,8 +71,10 @@ kubectl create namespace dev --dry-run=client -o yaml | kubectl apply -f -
 
 kubectl apply -n argocd --server-side --force-conflicts -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
 
-echo "===> Waiting for Argo CD API server to be ready..."
-kubectl -n argocd rollout status deployment/argocd-server --timeout=300s
+# First run pulls ~230 MB of images: give it time on slow networks
+echo "===> Waiting for Argo CD components to be ready (can take several minutes)..."
+kubectl -n argocd wait --for=condition=Available deployment --all --timeout=900s
+kubectl -n argocd rollout status statefulset/argocd-application-controller --timeout=900s
 
 echo "===> ArgoCD username: admin"
 echo "===> Initial ArgoCD password:"

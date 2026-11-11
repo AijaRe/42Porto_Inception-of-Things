@@ -9,6 +9,16 @@ Vagrant.configure("2") do |config|
       vb.memory = 1024
     end
     server.vm.provision "shell", path: "scripts/server_setup.sh"
+
+    # Remove the shared join token when the server is destroyed, so a
+    # stale token can never be picked up by a worker on the next `up`.
+    server.trigger.after :destroy do |t|
+      t.info = "Removing stale k3s-token"
+      t.ruby do
+        token = File.join(__dir__, "k3s-token")
+        File.delete(token) if File.exist?(token)
+      end
+    end
   end
 
   config.vm.define "gamado-xSW" do |worker|

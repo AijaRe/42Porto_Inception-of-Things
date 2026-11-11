@@ -44,6 +44,7 @@ A reference document explaining the core concepts of **K8s**, **K3s**, **K3d**, 
     - [Full Request Flow in p2](#full-request-flow-in-p2)
 - [7. What is a K8s Manifest?](#7-what-is-a-k8s-manifest)
   - [Core Manifest Fields:](#core-manifest-fields)
+    - [Matching kind and apiVersion](#matching-kind-and-apiversion)
   - [Complete End-to-End Manifest Example (Deployment + Service + Ingress)](#complete-end-to-end-manifest-example-deployment--service--ingress)
 - [8. How Everything Works Together](#8-how-everything-works-together)
   - [Request Flow](#request-flow)
@@ -296,6 +297,8 @@ Ensures that the desired number of Pods are running and healthy at all times, wh
 
 *Analogy: A safety & operations manager ensuring active instances match desired state and managing safe upgrades.*
 
+A Deployment is declared in a manifest with `apiVersion: apps/v1` and `kind: Deployment` (see [`p2/apps/app1/app1-deployment.yaml`](../p2/apps/app1/app1-deployment.yaml)). For the other resource types `kind` can take, see [Core Manifest Fields](#core-manifest-fields).
+
 #### Rollouts & Rollbacks:
 When updating a container image or configuration, Deployments execute a **Rolling Update** by default (gradually replacing old Pods with new ones without service downtime).
 
@@ -453,6 +456,29 @@ Every K8s manifest relies on **4 core top-level fields**:
 | **`kind`** | Specifies the type of K8s resource being created | `Pod`, `ReplicaSet`, `Deployment`, `Service`, `Ingress` |
 | **`metadata`** | Metadata identifying the resource | `name`, `namespace`, `labels` |
 | **`spec`** | The detailed specifications of your desired state | `replicas`, `selector`, `containers`, `image`, `ports` |
+
+#### Matching `kind` and `apiVersion`
+
+Each `kind` belongs to a specific API group, so `apiVersion` and `kind` must match. For example, `kind: Deployment` with `apiVersion: v1` is rejected, because Deployments live in `apps/v1`.
+
+| `kind` | `apiVersion` | Purpose | Used in |
+|---|---|---|---|
+| `Pod` | `v1` | Smallest deployable unit: one or more containers | — (created by Deployments) |
+| `Service` | `v1` | Stable IP/DNS name in front of a set of Pods | p2 |
+| `ConfigMap` / `Secret` | `v1` | Configuration / sensitive data injected into Pods | — |
+| `Namespace` | `v1` | Logical isolation of resources inside a cluster | p3 (`argocd`, `dev`) |
+| `Deployment` | `apps/v1` | Manages ReplicaSets, rolling updates and rollbacks | p2 |
+| `ReplicaSet` | `apps/v1` | Keeps N identical Pods running (usually created by a Deployment) | — (created by Deployments) |
+| `StatefulSet` | `apps/v1` | Pods with stable identity and storage (databases) | — |
+| `DaemonSet` | `apps/v1` | One Pod per node (log agents, monitoring) | — |
+| `Ingress` | `networking.k8s.io/v1` | HTTP routing by host/path to Services | p2 |
+| `Application` | `argoproj.io/v1alpha1` | Argo CD custom resource (CRD) syncing a Git repo to the cluster | p3 (planned) |
+
+This list is not exhaustive: **CRDs** (Custom Resource Definitions) let tools such as Argo CD add new `kind`s to the cluster. To list every `kind` the cluster you are connected to supports, with its API group:
+
+```bash
+kubectl api-resources
+```
 
 ---
 

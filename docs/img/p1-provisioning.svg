@@ -13,9 +13,9 @@
 <text x="155.0" y="179.0" text-anchor="middle" dominant-baseline="central" font-size="12.5" font-weight="400" fill="#5DCAA5">writes node token</text>
 <rect x="410" y="120" width="230" height="80" rx="8" fill="#085041" stroke="#1D9E75" stroke-width="1"/>
 <text x="525.0" y="141.0" text-anchor="middle" dominant-baseline="central" font-size="14.5" font-weight="400" fill="#E1F5EE">gamado-xSW (agent)</text>
-<text x="525.0" y="160.0" text-anchor="middle" dominant-baseline="central" font-size="12.5" font-weight="400" fill="#5DCAA5">swap, waits for token</text>
+<text x="525.0" y="160.0" text-anchor="middle" dominant-baseline="central" font-size="12.5" font-weight="400" fill="#5DCAA5">swap, waits for node token</text>
 <text x="525.0" y="179.0" text-anchor="middle" dominant-baseline="central" font-size="12.5" font-weight="400" fill="#5DCAA5">K3s agent</text>
-<text x="340" y="132" text-anchor="middle" dominant-baseline="central" font-size="12" fill="#B4B2A9">token in /vagrant</text>
+<text x="340" y="132" text-anchor="middle" dominant-baseline="central" font-size="12" fill="#B4B2A9">node token (/vagrant)</text>
 <path d="M272 146 L406 146" fill="none" stroke="#B4B2A9" stroke-width="1.2"  marker-end="url(#a)"/>
 <path d="M408 178 L274 178" fill="none" stroke="#B4B2A9" stroke-width="1.2"  marker-end="url(#a)"/>
 <text x="340" y="192" text-anchor="middle" dominant-baseline="central" font-size="12" fill="#B4B2A9">joins on :6443</text>

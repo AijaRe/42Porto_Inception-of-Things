@@ -1,6 +1,6 @@
 # Inception-of-Things (IoT)
 
-A SysAdmin & DevOps project focused on introducing **K8s**, **Vagrant** and **GitOps CI/CD** using **Argo CD**.
+A System Administration project from the 42 curriculum that practices DevOps tooling: **K8s** (K3s and K3d), **Vagrant** and **GitOps** continuous deployment with **Argo CD**.
 
 To achieve this efficiently, the project utilizes **K3s**:
 - **Standard K8s** is powerful, but large and resource-intensive (often requiring several GBs of RAM and complex setups).

@@ -2,7 +2,7 @@ setup:
 	bash scripts/setup.sh
 
 test:
-	bash scripts/verify_setup.sh
+	bash scripts/test.sh
 
 clean:
 	bash scripts/clean.sh

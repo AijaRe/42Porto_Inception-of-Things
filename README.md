@@ -34,10 +34,7 @@ Each part has its own README with prerequisites, setup steps, teardown instructi
 
 ## Key Learning Objectives
 
-- **Virtualization & Automation**: Automating VM provisioning and system configuration using Vagrant.
-- **Lightweight K8s**: Deploying and managing **K3s** and **K3d** (K3s in Docker containers).
-- **Cluster Networking & Ingress**: Exposing services and configuring Host-based HTTP routing using K8s Ingress controllers.
-- **GitOps & CI/CD**: Achieving declarative infrastructure management and automated synchronization via **Argo CD**.
+The project automates VM provisioning with **Vagrant**, runs lightweight Kubernetes with **K3s** on VMs and **K3d** in Docker, exposes several apps behind one IP through an **Ingress** that routes by HTTP `Host`, and ends with **GitOps** continuous deployment: **Argo CD** keeps the cluster matching a Git repository. It covers CD only; CI (building and testing images) is left as a [next step](./docs/gitops_argocd.md#5-next-steps-continuous-integration-ci).
 
 ---
 
@@ -46,4 +43,4 @@ Each part has its own README with prerequisites, setup steps, teardown instructi
 For detailed explanations of core DevOps and K8s concepts, check out:
 - [Vagrant](./docs/vagrant.md)
 - [Kubernetes Concepts](./docs/k8s_concepts.md)
-- [GitOps, CI/CD & Argo CD Concepts](./docs/gitops_argocd.md)
+- [GitOps, CD & Argo CD Concepts](./docs/gitops_argocd.md)

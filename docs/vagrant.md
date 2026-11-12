@@ -1,175 +1,53 @@
 # Vagrant Guide
 
-What Vagrant is, why it is useful and how Parts 1 and 2 of **Inception-of-Things** use it to create repeatable virtual machines.
+What Vagrant is and how Parts 1 and 2 of **Inception-of-Things** use it to create repeatable virtual machines.
 
 ## Index
 
 - [1. What Vagrant Does](#1-what-vagrant-does)
-- [2. Important Vocabulary](#2-important-vocabulary)
-- [3. What I Need To Install](#3-what-i-need-to-install)
-- [4. Essential Commands](#4-essential-commands)
-- [5. The Vagrantfile](#5-the-vagrantfile)
-- [6. Configuring CPU, Memory And Name](#6-configuring-cpu-memory-and-name)
-- [7. Private Network](#7-private-network)
-- [8. Shell Provisioning](#8-shell-provisioning)
+- [2. Vocabulary](#2-vocabulary)
+- [3. Essential Commands](#3-essential-commands)
+- [4. The Vagrantfile](#4-the-vagrantfile)
+- [5. Private Network](#5-private-network)
+- [6. Shell Provisioning](#6-shell-provisioning)
   - [Named Provisioners](#named-provisioners)
-- [9. Multiple VMs In One Vagrantfile](#9-multiple-vms-in-one-vagrantfile)
+- [7. Multiple VMs](#7-multiple-vms)
   - [Sharing Files Between VMs: The Synced Folder](#sharing-files-between-vms-the-synced-folder)
-- [10. Triggers](#10-triggers)
-- [11. Troubleshooting](#11-troubleshooting)
-- [12. Mental Model](#12-mental-model)
-- [13. References](#13-references)
+- [8. Triggers](#8-triggers)
+- [9. Troubleshooting](#9-troubleshooting)
+- [10. Next Steps](#10-next-steps)
+- [11. References](#11-references)
 
 ## 1. What Vagrant Does
 
-Vagrant is a tool for creating and managing VMs from code.
+Vagrant creates and manages VMs from code. Instead of clicking through VirtualBox and installing packages by hand, the VM is described in a `Vagrantfile`; `vagrant up` reads it, asks VirtualBox to create the VM, configures the network and runs the setup scripts. The result is repeatable: anyone gets the same machines, and they can be destroyed and recreated in minutes. Installing it only takes [VirtualBox](https://www.virtualbox.org/wiki/Downloads) and [Vagrant](https://developer.hashicorp.com/vagrant/install).
 
-Instead of creating a VM manually, clicking through VirtualBox screens, logging
-in and installing packages by hand, I describe the VM in a file named
-`Vagrantfile`. Then I run:
+## 2. Vocabulary
 
-```bash
-vagrant up
+The **host** is the real computer; the **guest** is the VM. The **provider** is the software that runs the VM (VirtualBox here). The **box** is the base OS image (`debian/bookworm64`). **Provisioning** is the setup that runs after the VM boots, here shell scripts that install K3s. In short:
+
+```text
+Vagrantfile + Box + Provider = Repeatable VM
 ```
 
-Vagrant reads the `Vagrantfile`, talks to a virtualization provider such as
-VirtualBox, creates the VM, configures networking and installs software
-automatically.
+## 3. Essential Commands
 
-The main benefit is repeatability:
-
-- Every dev can create the same environment.
-- Labs can be destroyed and recreated quickly.
-- Setup steps are written down as code.
-
-## 2. Important Vocabulary
-
-| Term | Meaning | In this project |
-|---|---|---|
-| **Host machine** | My real computer | The machine running `vagrant up` |
-| **Guest machine** | The VM created by Vagrant | `gamado-xS`, `gamado-xSW` (p1), `arepsaS` (p2) |
-| **Provider** | The software that actually runs the VM | VirtualBox |
-| **Box** | Base OS image used to create a VM | `debian/bookworm64` |
-| **Vagrantfile** | Ruby file describing the VMs: box, CPU, memory, network and provisioning | `p1/Vagrantfile`, `p2/Vagrantfile` |
-| **Provisioning** | Automatic configuration after the VM is created (install packages, start services) | Shell scripts in `scripts/` |
-
-## 3. What I Need To Install
-
-1. Install VirtualBox.
-2. Install Vagrant.
-
-Useful links:
-
-- https://www.virtualbox.org/wiki/Downloads
-- https://developer.hashicorp.com/vagrant/install
-
-## 4. Essential Commands
-
-Run them from the folder that contains the `Vagrantfile` (`p1/` or `p2/`):
+Run them from the folder that holds the `Vagrantfile` (`p1/` or `p2/`). Vagrant looks for it in the current directory and then in parent directories.
 
 ```bash
 vagrant validate              # Check the Vagrantfile syntax
 vagrant up                    # Create, boot and provision the VMs
-vagrant status                # Show the state of each VM
-vagrant ssh gamado-xS         # Open a shell in one VM
+vagrant status                # State of each VM
+vagrant ssh gamado-xS         # Shell in one VM
 vagrant provision             # Run the provisioners again
 vagrant reload                # Restart after changing the Vagrantfile
-vagrant halt                  # Shut down the VMs
-vagrant destroy -f            # Delete the VMs
-vagrant box list              # List downloaded boxes
+vagrant halt                  # Shut down (disk is kept)
+vagrant destroy -f            # Delete the VMs (next up starts from scratch)
 ```
 
-Important difference:
+## 4. The Vagrantfile
 
-- `vagrant halt` shuts down the VM; the disk is kept.
-- `vagrant destroy` deletes the VM; the next `vagrant up` starts from scratch.
-
-## 5. The Vagrantfile
-
-The smallest useful `Vagrantfile`:
-
-```ruby
-Vagrant.configure("2") do |config|
-  config.vm.box = "debian/bookworm64"
-end
-```
-
-When I run `vagrant up`, Vagrant looks for a `Vagrantfile` in the current
-directory. If it does not find one, it checks parent directories. That is why
-the commands are run from `p1/` or `p2/`.
-
-## 6. Configuring CPU, Memory And Name
-
-Provider-specific settings go inside the provider block. From `p1/Vagrantfile`:
-
-```ruby
-server.vm.provider "virtualbox" do |vb|
-  vb.name   = "gamado-xS"   # Name shown in VirtualBox
-  vb.cpus   = 1
-  vb.memory = 1024          # MB
-end
-```
-
-p1 uses 1 CPU / 1 GB per VM, as the subject asks. p2 gives its single VM 2 CPUs / 2 GB because it runs Traefik and three apps.
-
-Check inside the VM:
-
-```bash
-nproc
-free -h
-```
-
-## 7. Private Network
-
-A private network is a host-only network between the host and the VMs, with a
-static IP per VM:
-
-```ruby
-server.vm.network "private_network", ip: "192.168.56.110"
-```
-
-Each VM then has two interfaces:
-
-- **`eth0` (NAT)**: added by Vagrant to reach the internet. Every VM gets the same address there (`10.0.2.15`).
-- **`eth1` (private network)**: one address per VM (`192.168.56.110`, `192.168.56.111`), reachable from the host and from the other VMs.
-
-That is why the K3s scripts pin `--node-ip` and, in p2, `--flannel-iface=eth1`. See [Choosing Flannel's Interface](./k8s_concepts.md#choosing-flannels-interface---flannel-iface).
-
-Check it inside a VM:
-
-```bash
-ip a show eth1
-```
-
-## 8. Shell Provisioning
-
-A provisioner runs a script inside the VM after it boots:
-
-```ruby
-server.vm.provision "shell", path: "scripts/server_setup.sh"
-```
-
-The path is relative to the `Vagrantfile`. Provisioners run **in the order they are declared**, and by default only on the first `vagrant up`. Later runs need `vagrant provision` or `vagrant up --provision`.
-
-### Named Provisioners
-
-A provisioner can be given a **name**. This makes it possible to re-run only one step instead of all of them:
-
-```ruby
-config.vm.provision "ServerSetup", type: "shell", path: "scripts/server_setup.sh"
-config.vm.provision "DeployApps",  type: "shell", path: "scripts/deploy_apps.sh"
-```
-
-```bash
-vagrant provision                              # runs every provisioner again
-vagrant provision --provision-with DeployApps  # runs only DeployApps
-```
-
-Part 2 uses this: after editing the YAML manifests, `vagrant provision --provision-with DeployApps` applies them again without reinstalling K3s.
-
-## 9. Multiple VMs In One Vagrantfile
-
-`config.vm.define` declares one VM; a `Vagrantfile` can hold several. p1 defines the server and the worker:
+The `Vagrantfile` is Ruby. It sets the box, and inside a provider block, the VirtualBox settings. From `p1/Vagrantfile`:
 
 ```ruby
 Vagrant.configure("2") do |config|
@@ -177,56 +55,63 @@ Vagrant.configure("2") do |config|
 
   config.vm.define "gamado-xS" do |server|
     server.vm.hostname = "gamado-xS"
-    server.vm.network "private_network", ip: "192.168.56.110"
-    server.vm.provision "shell", path: "scripts/server_setup.sh"
-  end
-
-  config.vm.define "gamado-xSW" do |worker|
-    worker.vm.hostname = "gamado-xSW"
-    worker.vm.network "private_network", ip: "192.168.56.111"
-    worker.vm.provision "shell", path: "scripts/worker_setup.sh"
+    server.vm.provider "virtualbox" do |vb|
+      vb.name   = "gamado-xS"   # Name shown in VirtualBox
+      vb.cpus   = 1
+      vb.memory = 1024          # MB
+    end
   end
 end
 ```
 
-Settings on `config` apply to every VM; settings on `server` / `worker` only to that one. VMs are created in the order they are defined, so the server comes up before the worker.
+p1 uses 1 CPU and 1 GB per VM, as the subject asks; p2 gives its single VM 2 CPUs and 2 GB because it runs Traefik and three apps. `nproc` and `free -h` inside the VM confirm it.
 
-Most commands accept a VM name:
+## 5. Private Network
 
-```bash
-vagrant up                 # all VMs
-vagrant ssh gamado-xSW     # one VM
-vagrant halt gamado-xSW    # stop only the worker
+```ruby
+server.vm.network "private_network", ip: "192.168.56.110"
 ```
+
+A **private network** is a host-only network between the host and the VMs, with a fixed IP per VM. Each VM ends up with two interfaces: `eth0`, the NAT that Vagrant always adds to reach the internet (same address `10.0.2.15` on every VM), and `eth1`, the private network (`192.168.56.110`, `192.168.56.111`), reachable from the host and the other VMs. That is why the K3s scripts pin `--node-ip` and, in p2, [`--flannel-iface=eth1`](./k8s_concepts.md#choosing-flannels-interface---flannel-iface). `ip a show eth1` shows it.
+
+## 6. Shell Provisioning
+
+```ruby
+server.vm.provision "shell", path: "scripts/server_setup.sh"
+```
+
+A shell provisioner runs a script inside the VM after boot; the path is relative to the `Vagrantfile`. Provisioners run in the order they are declared and, by default, only on the first `vagrant up`; later runs need `vagrant provision` or `vagrant up --provision`.
+
+### Named Provisioners
+
+Giving provisioners a name lets one run alone. p2 has two:
+
+```ruby
+config.vm.provision "ServerSetup", type: "shell", path: "scripts/server_setup.sh"
+config.vm.provision "DeployApps",  type: "shell", path: "scripts/deploy_apps.sh"
+```
+
+After editing the manifests, `vagrant provision --provision-with DeployApps` applies them again without reinstalling K3s.
+
+## 7. Multiple VMs
+
+Each `config.vm.define` block declares one VM, so one `Vagrantfile` can hold several. p1 defines the server `gamado-xS` and the worker `gamado-xSW`, each with its hostname, IP and setup script. Settings on `config` (like the box) apply to every VM; settings inside a `define` block only to that one. VMs are created in the order they are defined, so the server comes up first. Most commands take a VM name: `vagrant ssh gamado-xSW`, `vagrant halt gamado-xSW`.
 
 ### Sharing Files Between VMs: The Synced Folder
 
-By default, Vagrant mounts the project directory (the folder that contains the `Vagrantfile`) inside every VM at **`/vagrant`**.
+Vagrant mounts the project folder (where the `Vagrantfile` is) inside every VM at **`/vagrant`**. Since all VMs mount the same host folder, a file one VM writes there appears for the others too.
 
 ```text
 Host:  ~/Inception-of-Things/p1/   ◄──── same files ────►   VM: /vagrant/
 ```
 
-This is called a **synced folder**. Since all VMs of a `Vagrantfile` mount the same host folder, it is also the simplest way to pass files **between** VMs:
+In p1 this is how the K3s **node token** reaches the worker: the server copies it to `/vagrant/k3s-token` and the worker waits for that file before joining. The token is a secret, so `k3s-token` is in `.gitignore`. In p2, `deploy_apps.sh` reads the manifests from `/vagrant/apps/` the same way.
 
-1. One VM writes a file to `/vagrant/`.
-2. The file appears in the project folder on the host.
-3. The other VM sees it in its own `/vagrant/`.
+Depending on box and provider, the folder can be a live share or a one-time `rsync` copy, and with `rsync` a file written by one VM would not reach the other. In this project `mount | grep vagrant` shows `type vboxsf`: a live VirtualBox shared folder, so the token appears for the worker immediately.
 
-In p1, this is how the K3s **node token** goes from the server to the worker: the server copies it to `/vagrant/k3s-token` and the worker waits for that file before joining. This is also why `k3s-token` appears in the `p1` folder on the host and is listed in `.gitignore`: it is a secret and must not be committed. In p2, the same folder is how `deploy_apps.sh` reads the manifests from `/vagrant/apps/`.
+## 8. Triggers
 
-How the folder is synced depends on the box and provider. It can be a live share (VirtualBox shared folders, NFS) or a one-time copy (`rsync`). With `rsync`, changes only travel when Vagrant syncs, which matters if a VM is waiting for a file written by another. In p1, `mount` shows `type vboxsf`: a live VirtualBox shared folder, so the token written by the server appears immediately for the worker.
-
-Check it inside a VM:
-
-```bash
-ls /vagrant
-mount | grep vagrant
-```
-
-## 10. Triggers
-
-A **trigger** runs code on the host before or after a Vagrant command. p1 uses one to delete the shared token when the server is destroyed, so the next `vagrant up` can never pick up a stale token:
+A **trigger** runs code on the host before or after a Vagrant command. p1 uses one to delete the shared token when the server is destroyed, so the next `vagrant up` never picks up a stale token:
 
 ```ruby
 server.trigger.after :destroy do |t|
@@ -238,47 +123,32 @@ server.trigger.after :destroy do |t|
 end
 ```
 
-## 11. Troubleshooting
+## 9. Troubleshooting
 
-Check the `Vagrantfile` syntax first:
+When Vagrant behaves strangely, `vagrant validate` checks the syntax first. If a VM is left behind after a failed `destroy`, `VBoxManage list vms` shows what VirtualBox still knows, and `VBoxManage unregistervm <VM_ID> --delete` removes it (only when sure it is no longer needed).
 
-```bash
-vagrant validate
-```
+## 10. Next Steps
 
-List the VMs VirtualBox knows about (useful when a VM is left behind after a failed `destroy`):
+Features this project does not need, in the order of this document.
 
-```bash
-VBoxManage list vms
-```
+**Commands** ([3](#3-essential-commands)). `vagrant snapshot save <name>` and `vagrant snapshot restore <name>` save and restore a VM's state, handy before a risky change. `vagrant suspend` / `resume` pause a VM instead of shutting it down.
 
-Only unregister/delete a VM when I am sure I no longer need it:
+**The Vagrantfile** ([4](#4-the-vagrantfile)). After configuring a VM, `vagrant package` turns it into a reusable box that other projects can start from. Resizing the disk needs a plugin such as `vagrant-disksize`.
 
-```bash
-VBoxManage unregistervm VM_ID --delete
-```
+**Networking** ([5](#5-private-network)). A **forwarded port** (`config.vm.network "forwarded_port", guest: 80, host: 8080`) exposes one guest port on `localhost` without a private network. A **public network** (bridge) puts the VM on the real LAN like another device, reachable by other machines.
 
-## 12. Mental Model
+**Provisioning** ([6](#6-shell-provisioning)). Short commands can go `inline` in the `Vagrantfile` instead of a script. When setup grows, **Ansible** (`config.vm.provision "ansible"`) replaces shell scripts with idempotent playbooks.
 
-```text
-Vagrantfile + Box + Provider = Repeatable VM
-```
+**Multiple VMs** ([7](#7-multiple-vms)). A Ruby loop (`(1..3).each do |i| ... end`) defines many similar VMs without repeating blocks.
 
-- The `Vagrantfile` is the recipe.
-- The box is the starting operating system.
-- The provider is the engine that runs the VM.
-- Provisioning turns a plain VM into the environment I actually want.
-
-I am not manually building machines anymore. I am writing down how machines should be built.
-
-## 13. References
+## 11. References
 
 - **Vagrant Documentation**: [https://developer.hashicorp.com/vagrant/docs](https://developer.hashicorp.com/vagrant/docs)
 - **Vagrantfile**: [https://developer.hashicorp.com/vagrant/docs/vagrantfile](https://developer.hashicorp.com/vagrant/docs/vagrantfile)
 - **Multi-Machine**: [https://developer.hashicorp.com/vagrant/docs/multi-machine](https://developer.hashicorp.com/vagrant/docs/multi-machine)
 - **Private Networks**: [https://developer.hashicorp.com/vagrant/docs/networking/private_network](https://developer.hashicorp.com/vagrant/docs/networking/private_network)
 - **Synced Folders**: [https://developer.hashicorp.com/vagrant/docs/synced-folders](https://developer.hashicorp.com/vagrant/docs/synced-folders)
-- **Provisioning Basics (named provisioners)**: [https://developer.hashicorp.com/vagrant/docs/provisioning/basic_usage](https://developer.hashicorp.com/vagrant/docs/provisioning/basic_usage)
+- **Provisioning (named provisioners)**: [https://developer.hashicorp.com/vagrant/docs/provisioning/basic_usage](https://developer.hashicorp.com/vagrant/docs/provisioning/basic_usage)
 - **Shell Provisioner**: [https://developer.hashicorp.com/vagrant/docs/provisioning/shell](https://developer.hashicorp.com/vagrant/docs/provisioning/shell)
 - **Triggers**: [https://developer.hashicorp.com/vagrant/docs/triggers](https://developer.hashicorp.com/vagrant/docs/triggers)
 - **VirtualBox Provider**: [https://developer.hashicorp.com/vagrant/docs/providers/virtualbox](https://developer.hashicorp.com/vagrant/docs/providers/virtualbox)

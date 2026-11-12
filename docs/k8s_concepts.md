@@ -2,8 +2,6 @@
 
 A reference document explaining the core concepts of **K8s**, **K3s**, **K3d** and Kubernetes primitives.
 
-> **Context**: Inception-of-Things is a System Administration project from the 42 curriculum that practices DevOps tooling: infrastructure as code with Vagrant, cluster orchestration with K3s and K3d, Ingress routing with Traefik and GitOps continuous deployment with Argo CD.
-
 ---
 
 ## Index

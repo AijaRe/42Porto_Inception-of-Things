@@ -28,7 +28,7 @@ Each part has its own README with prerequisites, setup steps, teardown instructi
 
 - **Part 1** — [K3s & Vagrant](./p1/README.md)
 - **Part 2** — [K3s & Multi-App Routing](./p2/README.md)
-- **Part 3** — [K3d & Argo CD (GitOps)](./p3/README.md) *(work in progress)*
+- **Part 3** — [K3d & Argo CD (GitOps)](./p3/README.md)
 
 ---
 

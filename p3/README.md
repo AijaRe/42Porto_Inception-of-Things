@@ -1,9 +1,6 @@
-
 # Part 3 — K3d & Argo CD (GitOps)
 
-This section walks you through a K3d cluster running inside Docker, with **Argo CD** in the `argocd` namespace deploying the app of the `dev` namespace from a public GitHub repository.
-
-> **Work in progress:** step 7 (v1 → v2 through Argo CD) is not tested yet. See the [Project Plan](#project-plan).
+A K3d cluster (`argonauts`) running in Docker on the host, with **Argo CD** in the `argocd` namespace keeping the `dev` namespace equal to a public GitHub repository. Changing the image tag in Git from `v1` to `v2` is enough to update the app.
 
 ## Index
 
@@ -11,31 +8,21 @@ This section walks you through a K3d cluster running inside Docker, with **Argo 
 - [Project Structure](#project-structure)
 - [The GitOps Repository](#the-gitops-repository)
 - [Usage](#usage)
-  - [1 — Install everything and create the cluster](#1--install-everything-and-create-the-cluster)
-  - [2 — Verify the setup](#2--verify-the-setup)
-  - [3 — Open the Argo CD interface](#3--open-the-argo-cd-interface)
-  - [4 — Tear down](#4--tear-down)
-- [Testing the Application](#testing-the-application)
-- [The Argo CD Application](#the-argo-cd-application)
-- [Verification Commands](#verification-commands)
-- [Troubleshooting](#troubleshooting)
+- [Verification](#verification)
+  - [The App](#the-app)
+  - [v1 → v2 Through Git](#v1--v2-through-git)
+  - [Self-Healing](#self-healing)
+- [What Part 3 Shows](#what-part-3-shows)
 - [Concepts Behind Part 3](#concepts-behind-part-3)
+- [Troubleshooting](#troubleshooting)
 - [Project Plan](#project-plan)
 - [Materials](#materials)
-- [References](#references)
 
 ---
 
 ## Prerequisites
 
-No Vagrant here: `scripts/setup.sh` installs everything directly on a **Debian 12** machine (or VM) with `sudo` and internet access. Ports `8080` and `8443` must be free.
-
-| Tool | Purpose |
-| :--- | :--- |
-| [Docker](https://docs.docker.com/engine/install/debian/) | Runs the K3d nodes as containers |
-| [K3d](https://k3d.io/) | Creates a K3s cluster inside Docker |
-| [kubectl](https://kubernetes.io/docs/tasks/tools/) | Talks to the cluster |
-| [Argo CD](https://argo-cd.readthedocs.io/) | Installed inside the cluster, watches the GitOps repo |
+No Vagrant here: everything runs on a Debian host with `sudo` and internet access, and host ports `8080` and `8443` must be free. `make setup` installs Docker, K3d and kubectl itself.
 
 ---
 
@@ -48,146 +35,168 @@ p3/
 │   └── application.yaml     # Argo CD Application: watches the GitOps repo
 └── scripts/
     ├── setup.sh             # Docker + K3d + kubectl, cluster, namespaces, Argo CD, Application
-    ├── verify_setup.sh      # Versions, node, namespaces, Argo CD access steps
+    ├── test.sh              # Checks the subject from the host
     ├── clean.sh             # Deletes the K3d clusters and prunes Docker
     └── fclean.sh            # clean + removes k3d, kubectl and Docker
 ```
-
-Cluster `argonauts` · namespaces `argocd` and `dev` · image `wil42/playground` (`v1`/`v2`, port `8888`).
 
 ---
 
 ## The GitOps Repository
 
-The subject requires a **public** repository whose name contains a group member's login: [gabzaf/gamado-x-iot](https://github.com/gabzaf/gamado-x-iot). Its `manifests/` folder holds the `wil-playground` Deployment and Service for `dev`.
-
-It was created from the terminal with the GitHub CLI:
-
-```bash
-gh repo create gamado-x-iot --public --clone && cd gamado-x-iot
-git add manifests && git commit -m "add wil-playground v1 manifests"
-git branch -M main && git push -u origin main
-gh api repos/gabzaf/gamado-x-iot --jq '.visibility'   # public
-```
-
-More `gh` commands: [gabzaf/gh-cheatsheet](https://github.com/gabzaf/gh-cheatsheet).
+The subject requires a **public** repository whose name contains a group member's login: [gabzaf/gamado-x-iot](https://github.com/gabzaf/gamado-x-iot). Its `manifests/` folder holds the `wil-playground` Deployment and Service for `dev`, using Wil's public image [`wil42/playground`](https://hub.docker.com/r/wil42/playground) (tags `v1` and `v2`, port `8888`).
 
 ---
 
 ## Usage
 
-Run everything from the `p3` directory.
+Run everything from the `p3` folder:
 
-### 1 — Install everything and create the cluster
+```bash
+cd p3
+```
+
+Install Docker, K3d and kubectl, create the cluster and the namespaces, install Argo CD and apply the Application. It skips what is already installed and prints the Argo CD `admin` password at the end; the first run downloads about 230 MB of images:
 
 ```bash
 make setup
 ```
 
-`setup.sh` skips what is already installed. It will:
-1. Install **Docker**, **K3d** and **kubectl**, and add your user to the `docker` group.
-2. Create the cluster **`argonauts`**, mapping host ports `8080 → 80` and `8443 → 443`.
-3. Create the namespaces **`argocd`** and **`dev`**.
-4. Install **Argo CD** in `argocd` and print the `admin` password.
-5. Apply `confs/application.yaml`: Argo CD deploys the app to `dev`.
-
-### 2 — Verify the setup
+If it stops with `permission denied ... docker.sock`, the `docker` group is not active in your session yet:
 
 ```bash
-make test
+newgrp docker
 ```
 
-### 3 — Open the Argo CD interface
+Open the Argo CD interface at [https://localhost:8081](https://localhost:8081) (user `admin`) while this runs:
 
 ```bash
 kubectl -n argocd port-forward svc/argocd-server 8081:443
 ```
 
-Open [https://localhost:8081](https://localhost:8081) and log in as `admin`. Password:
+Print the `admin` password again:
 
 ```bash
 kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d; echo
 ```
 
-### 4 — Tear down
+Delete the cluster. This also runs `docker system prune -af`, which removes **every** unused Docker image on the machine:
 
 ```bash
-make clean    # delete the K3d clusters and prune Docker
-make fclean   # also uninstall k3d, kubectl and Docker
+make clean
 ```
 
-> `clean` runs `docker system prune -af`: it removes **every** unused Docker image on the machine, not only this project's.
+Also uninstall k3d, kubectl and Docker:
+
+```bash
+make fclean
+```
 
 ---
 
-## Testing the Application
+## Verification
 
-Manual deploy of v1 (plan step 4):
+Run every check at once. Each line prints `[PASS]` or `[FAIL]`, and it exits non-zero if anything fails:
 
 ```bash
-kubectl apply -f https://raw.githubusercontent.com/gabzaf/gamado-x-iot/main/manifests/deployment.yaml
-kubectl apply -f https://raw.githubusercontent.com/gabzaf/gamado-x-iot/main/manifests/service.yaml
-kubectl -n dev rollout status deployment/wil-playground   # wait: the first image pull takes a while
+make test
+```
+
+It covers the tools, the `argonauts` cluster and its node, the `argocd` and `dev` namespaces, every Argo CD component, the Application `Synced` and `Healthy` on a public repository, and the app answering with the version of its image tag. The sections below run the same checks by hand.
+
+### The App
+
+Forward the app's port in one terminal:
+
+```bash
 kubectl -n dev port-forward svc/wil-playground 8888:8888
-curl http://localhost:8888/    # {"status":"ok", "message": "v1"}
 ```
 
-Switch to v2 the GitOps way (plan step 7, needs the Argo CD `Application`):
+In another, expect `{"status":"ok", "message": "v1"}` (or `v2`, matching the image tag in Git):
 
 ```bash
-# in the gamado-x-iot repository
+curl http://localhost:8888/
+```
+
+Argo CD's view, expecting `Synced` and `Healthy`:
+
+```bash
+kubectl get applications -n argocd
+```
+
+### v1 → v2 Through Git
+
+In a clone of the GitOps repository, change the tag and push:
+
+```bash
 sed -i 's/playground:v1/playground:v2/' manifests/deployment.yaml
-git commit -am "deploy v2" && git push
-# Argo CD replaces the pod; then curl answers "v2"
 ```
-
----
-
-## The Argo CD Application
-
-[`confs/application.yaml`](confs/application.yaml) tells Argo CD to keep `dev` equal to the `manifests/` folder of the `main` branch of [gabzaf/gamado-x-iot](https://github.com/gabzaf/gamado-x-iot).
-
-| Field | Meaning |
-| :--- | :--- |
-| `automated` | Syncs on every Git change, no manual "Sync" |
-| `prune: true` | A resource removed from Git is removed from the cluster |
-| `selfHeal: true` | A manual change in the cluster is reverted to what Git says |
-
-Demo of `selfHeal` at the defense: `kubectl -n dev scale deployment wil-playground --replicas=3`, then watch Argo CD bring it back to 1.
-
----
-
-## Verification Commands
 
 ```bash
-k3d cluster list                     # argonauts
-kubectl get nodes                    # node Ready (a Docker container)
-kubectl get ns argocd dev            # both namespaces exist
-kubectl get pods -n argocd           # all Argo CD components Running
-kubectl get applications -n argocd   # Synced / Healthy (once the Application exists)
-kubectl get all -n dev               # wil-playground pod, Deployment and Service
+git commit -am "deploy v2" && git push
+```
+
+Argo CD checks Git about every 3 minutes. Watch the old Pod being replaced, then run the `curl` again and expect `v2`:
+
+```bash
+kubectl -n dev get pods -w
+```
+
+To go back, push the opposite change (`v2` → `v1`).
+
+### Self-Healing
+
+A manual change in the cluster does not survive: scale the app to 3 replicas and Argo CD brings it back to the 1 replica that Git declares.
+
+```bash
+kubectl -n dev scale deployment wil-playground --replicas=3
+```
+
+```bash
+kubectl -n dev get pods -w
 ```
 
 ---
 
-## Troubleshooting
+## What Part 3 Shows
 
-- **`permission denied ... docker.sock`** → the `docker` group is new for your session: log out and in, or run `newgrp docker`.
-- **`kubectl` reaches the wrong cluster** → `setup.sh` keeps an existing `~/.kube/config`. Run `k3d kubeconfig merge argonauts --kubeconfig-switch-context`.
-- **`port is already allocated`** → something already uses `8080` or `8443`.
+Part 2 applied its manifests by hand (`kubectl apply` in a provisioner); Part 3 removes that step and makes Git the source of truth. The cluster itself also changes: instead of K3s on a Vagrant VM, K3d runs K3s inside a Docker container on the host, with a load balancer container mapping host port 8080 to the cluster's port 80. Argo CD runs in its own namespace; its `repo-server` reads [gabzaf/gamado-x-iot](https://github.com/gabzaf/gamado-x-iot) and its `application-controller` applies `manifests/` to `dev`, as described by the Application in [`confs/application.yaml`](confs/application.yaml). With `syncPolicy.automated`, a push is enough to deploy: `prune` deletes what left Git and `selfHeal` reverts manual changes.
+
+<img src="../docs/img/p3-cluster.svg" alt="What runs inside the k3d cluster" width="100%">
+
+*Inside the cluster: `kubectl` runs on the host and talks to K3s inside the `argonauts` container. Argo CD lives in `argocd`; what it reads from Git becomes the Deployment, Pod and Service in `dev`.*
+
+<img src="../docs/img/p3-gitops-flow.svg" alt="From git push to the new Pod" width="100%">
+
+*Deploying v2: a push changes the image tag in GitHub, Argo CD sees the cluster is `OutOfSync` and applies the new manifest, and the Deployment replaces the v1 Pod with a v2 one through a rolling update, with no `kubectl` involved.*
 
 ---
 
 ## Concepts Behind Part 3
 
+Each link goes to the explanation in `docs/`:
+
 | Question | Where to read |
 | :--- | :--- |
 | What is K3d, and how is it different from K3s? | [K3d](../docs/k8s_concepts.md#3-k3d) |
 | What is GitOps? | [What is GitOps?](../docs/gitops_argocd.md#1-what-is-gitops) |
+| What is Argo CD, and what does the Application declare? | [What is Argo CD?](../docs/gitops_argocd.md#3-what-is-argo-cd) |
 | CI vs CD: which one does Argo CD do? | [CI vs. CD](../docs/gitops_argocd.md#ci-vs-cd) |
-| What is Argo CD? | [What is Argo CD?](../docs/gitops_argocd.md#3-what-is-argo-cd) |
+| What are namespaces? | [Namespaces](../docs/k8s_concepts.md#namespaces) |
 | How does `kubectl` find the K3d cluster? | [Kubeconfig](../docs/k8s_concepts.md#kubeconfig-how-kubectl-finds-the-cluster) |
-| How does v1 → v2 roll out? | [Deployment & Rollouts](../docs/k8s_concepts.md#deployment-and-rolling-updates) |
+| How does v1 → v2 roll out? | [Deployment and Rolling Updates](../docs/k8s_concepts.md#deployment-and-rolling-updates) |
+
+---
+
+## Troubleshooting
+
+`kubectl` reaches an old or wrong cluster: `setup.sh` keeps an existing `~/.kube/config`, so point it at `argonauts`:
+
+```bash
+k3d kubeconfig merge argonauts --kubeconfig-switch-context
+```
+
+`port is already allocated` when creating the cluster: something already uses host port `8080` or `8443`.
 
 ---
 
@@ -223,9 +232,9 @@ kubectl get all -n dev               # wil-playground pod, Deployment and Servic
 
 ### 7. Continuous Deployment
 - [x] 7.1. Deploy application version v1 through Argo CD
-- [ ] 7.2. Update configuration to version v2
-- [ ] 7.3. Push changes to GitHub
-- [ ] 7.4. Verify automatic deployment by Argo CD
+- [x] 7.2. Update configuration to version v2
+- [x] 7.3. Push changes to GitHub
+- [x] 7.4. Verify automatic deployment by Argo CD
 
 ---
 
@@ -234,10 +243,6 @@ kubectl get all -n dev               # wil-playground pod, Deployment and Servic
 - [DEV - Why You Should Use k3d for Local Development](https://dev.to/cloudx/why-you-should-use-k3d-for-local-development-a-developers-guide-2cp5)
 - [DevOps Lab - GitOps with Argo CD](https://albanna-tutorials.com/devops/advanced/a03_gitops.html)
 
-## References
+---
 
-- **K3d**: [https://k3d.io/](https://k3d.io/)
-- **Argo CD Getting Started**: [https://argo-cd.readthedocs.io/en/stable/getting_started/](https://argo-cd.readthedocs.io/en/stable/getting_started/)
-- **Argo CD Automated Sync**: [https://argo-cd.readthedocs.io/en/stable/user-guide/auto_sync/](https://argo-cd.readthedocs.io/en/stable/user-guide/auto_sync/)
-- **Docker image tags**: [https://docs.docker.com/reference/cli/docker/image/tag/](https://docs.docker.com/reference/cli/docker/image/tag/)
-- **Wil's Playground image**: [https://hub.docker.com/r/wil42/playground](https://hub.docker.com/r/wil42/playground)
+Previous: [Part 2 — K3s & Three Simple Applications](../p2/README.md)

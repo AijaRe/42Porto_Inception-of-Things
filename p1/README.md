@@ -12,6 +12,7 @@ A two-node K3s cluster on two Debian VMs: the server `gamado-xS` (`192.168.56.11
   - [Server Mode](#server-mode)
   - [The Worker Runs Pods](#the-worker-runs-pods)
   - [Fresh Start on a New Machine](#fresh-start-on-a-new-machine)
+- [What Part 1 Shows](#what-part-1-shows)
 - [Concepts Behind Part 1](#concepts-behind-part-1)
 
 ---
@@ -165,6 +166,12 @@ The token only reaches the worker if `/vagrant` is a live VirtualBox shared fold
 ```bash
 vagrant ssh gamado-xSW -c "mount | grep vagrant"
 ```
+
+---
+
+## What Part 1 Shows
+
+Vagrant builds two Debian VMs from one Vagrantfile, each with 1 CPU, 1 GB of RAM and a fixed IP on a host-only network (`eth1`). The server installs K3s in server mode bound to `192.168.56.110` (`--node-ip`, `--bind-address`), with Traefik, servicelb and metrics-server disabled, and copies its node token to the synced folder `/vagrant`. The worker waits for that token and installs K3s in agent mode with `K3S_URL` pointing to the server's API on port 6443, which joins it to the cluster. Only the server holds the admin kubeconfig, so `kubectl` works there; the worker just runs the Pods it is assigned. A 1 GB swap file keeps the server from freezing under memory pressure.
 
 ---
 

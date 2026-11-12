@@ -173,6 +173,10 @@ vagrant ssh gamado-xSW -c "mount | grep vagrant"
 
 Vagrant builds two Debian VMs from one Vagrantfile, each with 1 CPU, 1 GB of RAM and a fixed IP on a host-only network (`eth1`). The server installs K3s in server mode bound to `192.168.56.110` (`--node-ip`, `--bind-address`), with Traefik, servicelb and metrics-server disabled, and copies its node token to the synced folder `/vagrant`. The worker waits for that token and installs K3s in agent mode with `K3S_URL` pointing to the server's API on port 6443, which joins it to the cluster. Only the server holds the admin kubeconfig, so `kubectl` works there; the worker just runs the Pods it is assigned. A 1 GB swap file keeps the server from freezing under memory pressure.
 
+![How the worker joins the server](../docs/img/p1-provisioning.svg)
+
+![Who talks to whom in the cluster](../docs/img/p1-cluster.svg)
+
 ---
 
 ## Concepts Behind Part 1

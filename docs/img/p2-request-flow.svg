@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="680" height="470" viewBox="0 0 680 470" role="img">
+<title>p2: path of a request to app2.com</title>
+<defs><marker id="a" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#B4B2A9" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+<rect width="680" height="470" rx="12" fill="#1E1E1D"/>
+<g style="font-family:Arial,Helvetica,'Liberation Sans',sans-serif">
+<rect x="170" y="30" width="280" height="56" rx="8" fill="#444441" stroke="#888780" stroke-width="1"/>
+<text x="310.0" y="48.5" text-anchor="middle" dominant-baseline="central" font-size="14.5" font-weight="400" fill="#F1EFE8">Host machine</text>
+<text x="310.0" y="67.5" text-anchor="middle" dominant-baseline="central" font-size="12.5" font-weight="400" fill="#B4B2A9">curl -H "Host: app2.com" 192.168.56.110</text>
+<path d="M310 86 L310 106" fill="none" stroke="#B4B2A9" stroke-width="1.2"  marker-end="url(#a)"/>
+<rect x="170" y="110" width="280" height="56" rx="8" fill="#085041" stroke="#1D9E75" stroke-width="1"/>
+<text x="310.0" y="128.5" text-anchor="middle" dominant-baseline="central" font-size="14.5" font-weight="400" fill="#E1F5EE">svclb-traefik Pod</text>
+<text x="310.0" y="147.5" text-anchor="middle" dominant-baseline="central" font-size="12.5" font-weight="400" fill="#5DCAA5">servicelb opens :80 on the node IP</text>
+<path d="M310 166 L310 186" fill="none" stroke="#B4B2A9" stroke-width="1.2"  marker-end="url(#a)"/>
+<rect x="170" y="190" width="280" height="56" rx="8" fill="#085041" stroke="#1D9E75" stroke-width="1"/>
+<text x="310.0" y="208.5" text-anchor="middle" dominant-baseline="central" font-size="14.5" font-weight="400" fill="#E1F5EE">Traefik</text>
+<text x="310.0" y="227.5" text-anchor="middle" dominant-baseline="central" font-size="12.5" font-weight="400" fill="#5DCAA5">reads Host, picks the rule</text>
+<rect x="480" y="190" width="150" height="56" rx="8" fill="#3C3489" stroke="#7F77DD" stroke-width="1"/>
+<text x="555.0" y="208.5" text-anchor="middle" dominant-baseline="central" font-size="14.5" font-weight="400" fill="#EEEDFE">Ingress rules</text>
+<text x="555.0" y="227.5" text-anchor="middle" dominant-baseline="central" font-size="12.5" font-weight="400" fill="#AFA9EC">app1-ingress</text>
+<path d="M480 218 L454 218" fill="none" stroke="#B4B2A9" stroke-width="1.2"  marker-end="url(#a)"/>
+<path d="M310 246 L310 266" fill="none" stroke="#B4B2A9" stroke-width="1.2"  marker-end="url(#a)"/>
+<rect x="170" y="270" width="280" height="56" rx="8" fill="#3C3489" stroke="#7F77DD" stroke-width="1"/>
+<text x="310.0" y="288.5" text-anchor="middle" dominant-baseline="central" font-size="14.5" font-weight="400" fill="#EEEDFE">Service app2-svc :80</text>
+<text x="310.0" y="307.5" text-anchor="middle" dominant-baseline="central" font-size="12.5" font-weight="400" fill="#AFA9EC">ClusterIP, picks 1 of 3 Pods</text>
+<path d="M310 326 L310 346" fill="none" stroke="#B4B2A9" stroke-width="1.2"  marker-end="url(#a)"/>
+<rect x="170" y="350" width="280" height="56" rx="8" fill="#3C3489" stroke="#7F77DD" stroke-width="1"/>
+<text x="310.0" y="368.5" text-anchor="middle" dominant-baseline="central" font-size="14.5" font-weight="400" fill="#EEEDFE">Pod app2 :8080</text>
+<text x="310.0" y="387.5" text-anchor="middle" dominant-baseline="central" font-size="12.5" font-weight="400" fill="#AFA9EC">“Hello from app2”</text>
+<rect x="170" y="434" width="14" height="14" rx="3" fill="#085041" stroke="#1D9E75"/>
+<text x="192" y="441" text-anchor="start" dominant-baseline="central" font-size="12" fill="#B4B2A9">Deployed by K3s</text>
+<rect x="340" y="434" width="14" height="14" rx="3" fill="#3C3489" stroke="#7F77DD"/>
+<text x="362" y="441" text-anchor="start" dominant-baseline="central" font-size="12" fill="#B4B2A9">Your p2 manifests</text>
+</g>
+</svg>

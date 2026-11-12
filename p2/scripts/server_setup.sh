@@ -12,11 +12,15 @@ echo "===> [arepsaS] Installing K3s"
 if [ -f /usr/local/bin/k3s ]; then
     echo "===> [arepsaS] k3s is already installed. Skipping installation."
 else
-    curl -sfL https://get.k3s.io | K3S_KUBECONFIG_MODE="644" INSTALL_K3S_EXEC="server \
+    # Download first: with "curl | sh", a failed download runs an empty script
+    # that exits 0, and K3s would silently not be installed.
+    echo "===> [arepsaS] Downloading the K3s installer..."
+    curl -sfL --retry 5 --retry-delay 3 https://get.k3s.io -o /tmp/k3s-install.sh
+    K3S_KUBECONFIG_MODE="644" INSTALL_K3S_EXEC="server \
   		--node-ip=192.168.56.110 \
   		--bind-address=192.168.56.110 \
 		--flannel-iface=eth1 \
-		--disable=metrics-server" sh -
+		--disable=metrics-server" sh /tmp/k3s-install.sh
     echo "===> [arepsaS] k3s server installed successfully."
 fi
 

@@ -12,6 +12,7 @@ A reference document explaining the core concepts of **K8s**, **K3s**, **K3d** a
   - [Server and Agent Modes](#server-and-agent-modes)
   - [How an Agent Joins the Cluster](#how-an-agent-joins-the-cluster)
   - [Bundled Components Disabled in p1](#bundled-components-disabled-in-p1)
+  - [Swap in p1](#swap-in-p1)
 - [3. K3d](#3-k3d)
 - [4. Cluster and Nodes](#4-cluster-and-nodes)
   - [What Runs on Each Node](#what-runs-on-each-node)
@@ -80,6 +81,19 @@ gamado-xS (server)                              gamado-xSW (agent)
 ### Bundled Components Disabled in p1
 
 K3s installs extra components by default, each running as Pods that use memory. With 1 GB per VM and no application to expose, the p1 server script turns three of them off with `--disable=...`: **Traefik** (the Ingress controller, see [Ingress](#7-ingress)), **servicelb** (exposes `LoadBalancer` Services on a VM) and **metrics-server** (CPU/RAM usage for `kubectl top`). p2 keeps Traefik and servicelb, since it exposes its apps through them.
+
+### Swap in p1
+
+Even with those components off, a K3s server barely fits in 1 GB: without swap, only about 157 MiB stayed free, and when the worker joined, the server froze for minutes. With no swap, the kernel can only free memory by dropping program code that is read back from disk right away, so the CPU stays busy and nothing responds. The p1 scripts therefore add a 1 GB swap file on each VM: when RAM runs short, the kernel moves idle memory to disk instead of freezing.
+
+This does not give the VMs 2 GB of memory. The subject talks about RAM and CPU, and those stay the same: VirtualBox still allocates 1024 MB (`vb.memory = 1024`) and `nproc` still shows 1. Swap is disk, much slower than RAM, so it is a safety margin and not extra performance; small production servers usually have it for the same reason. `free -h` shows both lines apart: `Mem` about 960Mi, `Swap` 1.0Gi.
+
+Measured on one machine (times vary between machines):
+
+| | Without swap | With swap |
+|---|---|---|
+| `vagrant up` from scratch | 24 min, server frozen for ~7 min | ~12.5 min, no freeze |
+| Swap used by the server afterwards | — | ~225 MiB |
 
 ---
 

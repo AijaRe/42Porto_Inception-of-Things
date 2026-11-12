@@ -77,7 +77,7 @@ Expect a total a little under 1 GiB (around 950 MiB, it varies by machine):
 free -h
 ```
 
-`free` shows less than 1024 MiB because the kernel reserves part of the memory at boot and does not count it as usable.
+`free` shows less than 1024 MiB because the kernel reserves part of the memory at boot and does not count it as usable. The `Swap` line shows 1.0Gi: a swap file on disk that keeps K3s from freezing the VM, while RAM stays at 1 GB (see [Swap in p1](../docs/k8s_concepts.md#swap-in-p1)).
 
 ### Network and Node IPs
 
@@ -157,6 +157,7 @@ Each link goes to the explanation in `docs/`:
 | How does the worker join the cluster? What is the token? | [How an Agent Joins the Cluster](../docs/k8s_concepts.md#how-an-agent-joins-the-cluster) |
 | How does the token go from one VM to the other? | [Sharing Files Between VMs](../docs/vagrant.md#sharing-files-between-vms-the-synced-folder) |
 | Why are Traefik, servicelb and metrics-server disabled? | [Bundled Components Disabled in p1](../docs/k8s_concepts.md#bundled-components-disabled-in-p1) |
+| Why is there swap? Does the VM have 2 GB? | [Swap in p1](../docs/k8s_concepts.md#swap-in-p1) |
 | What runs on the server and what runs on the worker? | [What Runs on Each Node](../docs/k8s_concepts.md#what-runs-on-each-node) |
 | How do pods on different nodes talk to each other? | [Flannel](../docs/k8s_concepts.md#pod-networking-between-nodes-in-k3s-flannel) |
 | Why does `kubectl` only work on the server? | [Kubeconfig](../docs/k8s_concepts.md#kubeconfig-how-kubectl-finds-the-cluster) |

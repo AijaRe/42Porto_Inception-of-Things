@@ -70,13 +70,13 @@ Expect `1`:
 nproc
 ```
 
-Expect a total of about 949 MiB:
+Expect a total a little under 1 GiB (around 950 MiB, it varies by machine):
 
 ```bash
 free -h
 ```
 
-`free` shows about 949 MiB instead of 1024 because the kernel reserves part of the memory at boot and does not count it as usable.
+`free` shows less than 1024 MiB because the kernel reserves part of the memory at boot and does not count it as usable.
 
 ### Network and Node IPs
 

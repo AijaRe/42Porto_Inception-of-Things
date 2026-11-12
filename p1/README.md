@@ -10,6 +10,7 @@ A two-node K3s cluster on two Debian VMs: the server `gamado-xS` (`192.168.56.11
   - [Resources](#resources)
   - [Network and Node IPs](#network-and-node-ips)
   - [Server Mode](#server-mode)
+  - [The Worker Runs Pods](#the-worker-runs-pods)
   - [Fresh Start on a New Machine](#fresh-start-on-a-new-machine)
 - [Concepts Behind Part 1](#concepts-behind-part-1)
 
@@ -125,6 +126,26 @@ To remove it, end the label name with `-`:
 
 ```bash
 k label node gamado-xsw node-role.kubernetes.io/worker-
+```
+
+### The Worker Runs Pods
+
+`Ready` alone does not prove the worker runs workloads. On the server, start a test Pod pinned to the worker:
+
+```bash
+k run test --image=nginx --overrides='{"spec":{"nodeName":"gamado-xsw"}}'
+```
+
+Expect `Running` with `NODE gamado-xsw`. The first time it stays in `ContainerCreating` while the worker downloads the image; `k describe pod test` shows `Pulling image` meanwhile:
+
+```bash
+k get pod test -o wide
+```
+
+Remove it afterwards:
+
+```bash
+k delete pod test
 ```
 
 ### Fresh Start on a New Machine

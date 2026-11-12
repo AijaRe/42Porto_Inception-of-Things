@@ -84,7 +84,7 @@ K3s installs extra components by default, each running as Pods that use memory. 
 
 ### Swap in p1
 
-Even with those components off, a K3s server barely fits in 1 GB: without swap, only about 157 MiB stayed free, and when the worker joined, the server froze for minutes. With no swap, the kernel can only free memory by dropping program code that is read back from disk right away, so the CPU stays busy and nothing responds. The p1 scripts therefore add a 1 GB swap file on each VM: when RAM runs short, the kernel moves idle memory to disk instead of freezing.
+Even with those components off, a K3s server barely fits in 1 GB: without swap, only about 157 MiB stayed free, and when the worker joined, the server froze for minutes. With no swap, the kernel can only free memory by dropping program code that is read back from disk right away, so the CPU stays busy and nothing responds. The p1 scripts therefore add a 1 GB swap file on each VM: when RAM runs short, the kernel moves idle memory to disk instead of freezing. The subject does not require swap and p1 can come up without it, but not reliably: of three runs from scratch without swap, one worked, one froze for 7 minutes and recovered, and one never recovered.
 
 This does not give the VMs 2 GB of memory. The subject talks about RAM and CPU, and those stay the same: VirtualBox still allocates 1024 MB (`vb.memory = 1024`) and `nproc` still shows 1. Swap is disk, much slower than RAM, so it is a safety margin and not extra performance; small production servers usually have it for the same reason. `free -h` shows both lines apart: `Mem` about 960Mi, `Swap` 1.0Gi.
 

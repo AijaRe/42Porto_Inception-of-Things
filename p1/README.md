@@ -173,9 +173,17 @@ vagrant ssh gamado-xSW -c "mount | grep vagrant"
 
 Vagrant builds two Debian VMs from one Vagrantfile, each with 1 CPU, 1 GB of RAM and a fixed IP on a host-only network (`eth1`). The server installs K3s in server mode bound to `192.168.56.110` (`--node-ip`, `--bind-address`), with Traefik, servicelb and metrics-server disabled, and copies its node token to the synced folder `/vagrant`. The worker waits for that token and installs K3s in agent mode with `K3S_URL` pointing to the server's API on port 6443, which joins it to the cluster. Only the server holds the admin kubeconfig, so `kubectl` works there; the worker just runs the Pods it is assigned. A 1 GB swap file keeps the server from freezing under memory pressure.
 
-![How the worker joins the server](../docs/img/p1-provisioning.svg)
+<img src="../docs/img/p1-provisioning.svg" alt="How the worker joins the server" width="100%">
 
-![Who talks to whom in the cluster](../docs/img/p1-cluster.svg)
+*Provisioning: the server writes its node token to the shared `/vagrant` folder; the worker reads it and joins through the API on port 6443.*
+
+<img src="../docs/img/p1-cluster.svg" alt="Who talks to whom in the cluster" width="100%">
+
+*Running cluster: `kubectl` exists only on the server, the agent reaches the same API with the token, and Flannel links the Pod networks of both nodes over `eth1`.*
+
+<img src="../docs/img/p1-request-flow.svg" alt="What happens on kubectl run" width="100%">
+
+*A `kubectl run` request: the API server stores the Pod, the scheduler assigns it to a node, the worker's kubelet sees the assignment through the agent's connection to the API, and containerd starts the container.*
 
 ---
 

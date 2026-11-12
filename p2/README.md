@@ -164,11 +164,13 @@ k get svc,pods -n kube-system | grep -E "traefik|svclb"
 
 A single K3s server (with `--flannel-iface=eth1`) runs three Deployments of the same image, differing only by the `MESSAGE` variable; app2 has `replicas: 3`, kept by its ReplicaSet. Each Deployment sits behind a `ClusterIP` Service that finds its Pods by label and forwards port 80 to container port 8080. One Ingress holds three rules: `app1.com` and `app2.com` matched by the `Host` header, and a rule without `host` as the default for app3. Traefik, the Ingress controller K3s ships, applies them, and servicelb exposes Traefik on the node's IP. Vagrant's named provisioners split installing K3s (`ServerSetup`) from applying the manifests (`DeployApps`).
 
-![Path of a request to app2.com](../docs/img/p2-request-flow.svg)
+<img src="../docs/img/p2-request-flow.svg" alt="Path of a request to app2.com" width="100%">
 
-![What each provisioner puts in the cluster](../docs/img/p2-provisioning.svg)
+*A request to `app2.com`: servicelb opens port 80 on the node, Traefik matches the `Host` header against the Ingress rules, and the Service picks one of the 3 app2 Pods. The Ingress receives no traffic: it is the rule table Traefik reads.*
 
-The Ingress receives no traffic: it is the rule table Traefik reads.
+<img src="../docs/img/p2-provisioning.svg" alt="What each provisioner puts in the cluster" width="100%">
+
+*Provisioning: `ServerSetup` installs K3s, which deploys Traefik and servicelb by itself; `DeployApps` applies the p2 manifests, which is why it can run again alone.*
 
 ---
 

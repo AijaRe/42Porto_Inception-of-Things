@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="680" height="640" viewBox="0 0 680 640" role="img">
+<title>p1: what happens on kubectl run</title>
+<defs><marker id="a" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#B4B2A9" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+<rect width="680" height="640" rx="12" fill="#1E1E1D"/>
+<g style="font-family:Arial,Helvetica,'Liberation Sans',sans-serif">
+<rect x="130" y="30" width="360" height="262" rx="16" fill="none" stroke="#888780" stroke-width="1" stroke-dasharray="6 4"/><text x="150" y="50" dominant-baseline="central" font-size="13" fill="#D3D1C7">gamado-xS · server</text><text x="470" y="50" text-anchor="end" dominant-baseline="central" font-size="12" fill="#B4B2A9">192.168.56.110</text>
+<rect x="170" y="66" width="280" height="56" rx="8" fill="#444441" stroke="#888780" stroke-width="1"/>
+<text x="310.0" y="84.5" text-anchor="middle" dominant-baseline="central" font-size="14.5" font-weight="400" fill="#F1EFE8">kubectl run test --image=nginx</text>
+<text x="310.0" y="103.5" text-anchor="middle" dominant-baseline="central" font-size="12.5" font-weight="400" fill="#B4B2A9">request to the API on :6443</text>
+<path d="M310 122 L310 142" fill="none" stroke="#B4B2A9" stroke-width="1.2"  marker-end="url(#a)"/>
+<rect x="170" y="146" width="280" height="56" rx="8" fill="#085041" stroke="#1D9E75" stroke-width="1"/>
+<text x="310.0" y="164.5" text-anchor="middle" dominant-baseline="central" font-size="14.5" font-weight="400" fill="#E1F5EE">API server</text>
+<text x="310.0" y="183.5" text-anchor="middle" dominant-baseline="central" font-size="12.5" font-weight="400" fill="#5DCAA5">validates, stores the Pod</text>
+<path d="M310 202 L310 222" fill="none" stroke="#B4B2A9" stroke-width="1.2"  marker-end="url(#a)"/>
+<rect x="170" y="226" width="280" height="56" rx="8" fill="#085041" stroke="#1D9E75" stroke-width="1"/>
+<text x="310.0" y="244.5" text-anchor="middle" dominant-baseline="central" font-size="14.5" font-weight="400" fill="#E1F5EE">Scheduler</text>
+<text x="310.0" y="263.5" text-anchor="middle" dominant-baseline="central" font-size="12.5" font-weight="400" fill="#5DCAA5">assigns the Pod to a node</text>
+<rect x="130" y="322" width="360" height="262" rx="16" fill="none" stroke="#888780" stroke-width="1" stroke-dasharray="6 4"/><text x="150" y="342" dominant-baseline="central" font-size="13" fill="#D3D1C7">gamado-xSW · agent</text><text x="470" y="342" text-anchor="end" dominant-baseline="central" font-size="12" fill="#B4B2A9">192.168.56.111</text>
+<path d="M310 282 L310 354" fill="none" stroke="#B4B2A9" stroke-width="1.2"  marker-end="url(#a)"/>
+<text x="318" y="302" text-anchor="start" dominant-baseline="central" font-size="12" fill="#B4B2A9">agent watches the API</text>
+<rect x="170" y="358" width="280" height="56" rx="8" fill="#085041" stroke="#1D9E75" stroke-width="1"/>
+<text x="310.0" y="376.5" text-anchor="middle" dominant-baseline="central" font-size="14.5" font-weight="400" fill="#E1F5EE">kubelet</text>
+<text x="310.0" y="395.5" text-anchor="middle" dominant-baseline="central" font-size="12.5" font-weight="400" fill="#5DCAA5">sees the Pod assigned to it</text>
+<path d="M310 414 L310 434" fill="none" stroke="#B4B2A9" stroke-width="1.2"  marker-end="url(#a)"/>
+<rect x="170" y="438" width="280" height="56" rx="8" fill="#085041" stroke="#1D9E75" stroke-width="1"/>
+<text x="310.0" y="456.5" text-anchor="middle" dominant-baseline="central" font-size="14.5" font-weight="400" fill="#E1F5EE">containerd</text>
+<text x="310.0" y="475.5" text-anchor="middle" dominant-baseline="central" font-size="12.5" font-weight="400" fill="#5DCAA5">pulls nginx, starts it</text>
+<path d="M310 494 L310 514" fill="none" stroke="#B4B2A9" stroke-width="1.2"  marker-end="url(#a)"/>
+<rect x="170" y="518" width="280" height="56" rx="8" fill="#3C3489" stroke="#7F77DD" stroke-width="1"/>
+<text x="310.0" y="536.5" text-anchor="middle" dominant-baseline="central" font-size="14.5" font-weight="400" fill="#EEEDFE">Pod test · Running</text>
+<text x="310.0" y="555.5" text-anchor="middle" dominant-baseline="central" font-size="12.5" font-weight="400" fill="#AFA9EC">status goes back to the API</text>
+<rect x="170" y="607" width="14" height="14" rx="3" fill="#085041" stroke="#1D9E75"/>
+<text x="192" y="614" text-anchor="start" dominant-baseline="central" font-size="12" fill="#B4B2A9">K3s components</text>
+<rect x="340" y="607" width="14" height="14" rx="3" fill="#3C3489" stroke="#7F77DD"/>
+<text x="362" y="614" text-anchor="start" dominant-baseline="central" font-size="12" fill="#B4B2A9">Your workload</text>
+</g>
+</svg>

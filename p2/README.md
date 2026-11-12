@@ -168,6 +168,10 @@ Part 1 built an empty cluster; Part 2 runs applications on one and exposes them.
 
 *Provisioning: `ServerSetup` installs K3s, which deploys Traefik and servicelb by itself; `DeployApps` applies the p2 manifests, which is why it can run again alone.*
 
+<img src="../docs/img/p2-cluster.svg" alt="What runs inside the cluster, by namespace" width="100%">
+
+*Inside the cluster: one K3s node runs everything. `kube-system` holds what K3s installs (Traefik, servicelb, CoreDNS, local-path), and `default` holds the p2 manifests; `k get pods -A` lists the same Pods.*
+
 <img src="../docs/img/p2-request-flow.svg" alt="Path of a request to app2.com" width="100%">
 
 *A request to `app2.com`: servicelb opens port 80 on the node, Traefik matches the `Host` header against the Ingress rules, and the Service picks one of the 3 app2 Pods. The Ingress receives no traffic: it is the rule table Traefik reads.*

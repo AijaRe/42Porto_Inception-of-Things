@@ -1,6 +1,6 @@
 # Inception-of-Things (IoT)
 
-A System Administration project from the 42 curriculum that practices DevOps tooling: **K8s** (K3s and K3d), **Vagrant** and **GitOps** continuous deployment with **Argo CD**.
+A System Administration project from the 42 curriculum that practices DevOps tooling: infrastructure as code with **Vagrant**, cluster orchestration with **K3s** and **K3d**, Ingress routing with **Traefik** and **GitOps** continuous deployment with **Argo CD**.
 
 To achieve this efficiently, the project utilizes **K3s**:
 - **Standard K8s** is powerful, but large and resource-intensive (often requiring several GBs of RAM and complex setups).

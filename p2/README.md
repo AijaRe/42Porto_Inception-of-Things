@@ -33,7 +33,8 @@ p2/
 ├── Vagrantfile                  # One VM: arepsaS, 192.168.56.110
 ├── scripts/
 │   ├── server_setup.sh          # Installs K3s in server mode
-│   └── deploy_apps.sh           # Applies all Kubernetes manifests
+│   ├── deploy_apps.sh           # Applies all Kubernetes manifests
+│   └── test.sh                  # Checks the subject from the host
 ├── apps/
 │   ├── app1/                    # 1 replica,  "Hello from app1"
 │   ├── app2/                    # 3 replicas, "Hello from app2"
@@ -81,6 +82,14 @@ More commands in the [Vagrant guide](../docs/vagrant.md#3-essential-commands).
 ---
 
 ## Verification
+
+Run every check below at once from the host, inside the part's folder. Each line prints `[PASS]` or `[FAIL]`, and the script exits non-zero if anything fails:
+
+```bash
+bash scripts/test.sh
+```
+
+It covers the VM (hostname, `eth1` IP), routing by `Host` for the three apps and the default, the 3 app2 replicas answering, the ready replicas, the `apps-ingress` and Traefik's `LoadBalancer`. The sections below run the same checks by hand.
 
 ### From the Host
 

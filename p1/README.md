@@ -63,7 +63,13 @@ More commands in the [Vagrant guide](../docs/vagrant.md#3-essential-commands).
 
 ## Verification
 
-Run these inside the VMs to check the subject requirements.
+Run every check below at once from the host, inside the part's folder. Each line prints `[PASS]` or `[FAIL]`, and the script exits non-zero if anything fails:
+
+```bash
+bash scripts/test.sh
+```
+
+It covers both VMs (hostname, 1 CPU, ~1 GB RAM, `eth1` IP), the `k3s` and `k3s-agent` services, both nodes `Ready` with the right IPs, `kubectl` refused on the worker, and a test Pod running on the worker. The sections below run the same checks by hand, inside the VMs.
 
 ### Resources
 

@@ -172,9 +172,9 @@ Part 1 built an empty cluster; Part 2 runs applications on one and exposes them.
 
 *A request to `app2.com`: servicelb opens port 80 on the node, Traefik matches the `Host` header against the Ingress rules, and the Service picks one of the 3 app2 Pods. The Ingress receives no traffic: it is the rule table Traefik reads.*
 
-<img src="../docs/img/p2-host-routing.svg" alt="Traefik routes by Host header to three apps" width="100%">
+<img src="../docs/img/p2-host-routing.svg" alt="The Ingress holds three Host rules that Traefik applies" width="100%">
 
-*Routing: Traefik compares the `Host` header with the Ingress rules. `app1.com` and `app2.com` have their own rules; any other name, or the bare IP, falls to the rule without `host` and reaches app3.*
+*Routing: one Ingress object, `app1-ingress`, holds three rules and Traefik applies them by `Host` header. `app1.com` and `app2.com` have their own rules; any other name, or the bare IP, falls to the rule without `host` and reaches app3.*
 
 ---
 

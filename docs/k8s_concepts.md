@@ -1,6 +1,6 @@
 # Kubernetes
 
-A reference document explaining the core concepts of **K8s**, **K3s**, **K3d**, **Minikube** and Kubernetes primitives.
+A reference document explaining the core concepts of **K8s**, **K3s**, **K3d** and Kubernetes primitives.
 
 > **Context**: This reference guide forms part of the DevOps project, documenting containerization, cluster orchestration with Vagrant, K3s, K3d, Ingress controllers and GitOps continuous deployment with Argo CD.
 
@@ -10,32 +10,28 @@ A reference document explaining the core concepts of **K8s**, **K3s**, **K3d**, 
 
 - [1. What is Kubernetes (K8s)?](#1-what-is-kubernetes-k8s)
   - [What about Docker Compose?](#what-about-docker-compose)
-  - [Container Runtimes & CRI Tools](#container-runtimes--cri-tools)
 - [2. Why is it called K8s?](#2-why-is-it-called-k8s)
 - [3. What is K3s?](#3-what-is-k3s)
   - [Key Characteristics:](#key-characteristics)
   - [Server and Agent Modes](#server-and-agent-modes)
   - [How an Agent Joins the Cluster](#how-an-agent-joins-the-cluster)
   - [Bundled Components Disabled in p1](#bundled-components-disabled-in-p1)
-- [4. What is K3d & Minikube?](#4-what-is-k3d--minikube)
-  - [1. K3d (Containerized K3s)](#1-k3d-containerized-k3s)
-  - [2. Minikube](#2-minikube)
-- [5. Relationship & Hierarchy (K8s, K3s, K3d, Minikube)](#5-relationship--hierarchy-k8s-k3s-k3d-minikube)
+- [4. What is K3d?](#4-what-is-k3d)
+- [5. Relationship & Hierarchy (K8s, K3s, K3d)](#5-relationship--hierarchy-k8s-k3s-k3d)
 - [6. Core K8s Building Blocks & Mental Model](#6-core-k8s-building-blocks--mental-model)
   - [6.1 Cluster](#61-cluster)
   - [6.2 Node](#62-node)
     - [What Runs on Each Node](#what-runs-on-each-node)
   - [6.3 Pod](#63-pod)
-  - [6.4 Controller Evolution: ReplicationController vs ReplicaSet](#64-controller-evolution-replicationcontroller-vs-replicaset)
-    - [3 Ways to Scale Pod Replicas:](#3-ways-to-scale-pod-replicas)
+  - [6.4 ReplicaSet](#64-replicaset)
   - [6.5 Deployment & Rollout Management](#65-deployment--rollout-management)
-    - [Rollouts & Rollbacks:](#rollouts--rollbacks)
+    - [Rolling Updates:](#rolling-updates)
   - [6.6 Networking & Service Types Deep-Dive](#66-networking--service-types-deep-dive)
     - [Pod Networking & CNI](#pod-networking--cni)
     - [Pod Networking Between Nodes in K3s: Flannel](#pod-networking-between-nodes-in-k3s-flannel)
     - [Choosing Flannel's Interface: --flannel-iface](#choosing-flannels-interface---flannel-iface)
     - [Services](#services)
-    - [The 3 Core Service Types:](#the-3-core-service-types)
+    - [Service Types Used in This Project](#service-types-used-in-this-project)
     - [How a Service Finds Its Pods: Selector, port and targetPort](#how-a-service-finds-its-pods-selector-port-and-targetport)
   - [6.7 Ingress](#67-ingress)
     - [Ingress vs Ingress Controller](#ingress-vs-ingress-controller)
@@ -45,7 +41,7 @@ A reference document explaining the core concepts of **K8s**, **K3s**, **K3d**, 
 - [7. What is a K8s Manifest?](#7-what-is-a-k8s-manifest)
   - [Core Manifest Fields:](#core-manifest-fields)
     - [Matching kind and apiVersion](#matching-kind-and-apiversion)
-  - [Complete End-to-End Manifest Example (Deployment + Service + Ingress)](#complete-end-to-end-manifest-example-deployment--service--ingress)
+  - [End-to-End Example from p2 (Deployment + Service + Ingress)](#end-to-end-example-from-p2-deployment--service--ingress)
 - [8. How Everything Works Together](#8-how-everything-works-together)
   - [Request Flow](#request-flow)
   - [Physical / Virtual Infrastructure View](#physical--virtual-infrastructure-view)
@@ -53,9 +49,8 @@ A reference document explaining the core concepts of **K8s**, **K3s**, **K3d**, 
   - [Productivity Tip](#productivity-tip)
   - [Kubeconfig: How kubectl Finds the Cluster](#kubeconfig-how-kubectl-finds-the-cluster)
   - [Declarative Operations](#declarative-operations)
-  - [Imperative Resource Creation](#imperative-resource-creation)
   - [Inspection & Debugging](#inspection--debugging)
-  - [Rollout & History Management](#rollout--history-management)
+  - [Rollout Status](#rollout-status)
 - [10. Summary Cheat Sheet](#10-summary-cheat-sheet)
 - [11. Concepts Progression in Inception-of-Things](#11-concepts-progression-in-inception-of-things)
 - [12. References & Resources](#12-references--resources)
@@ -79,11 +74,6 @@ When running hundreds of containers across multiple machines, K8s automatically 
 - **K8s** is designed to manage multi-container applications across a **cluster of multiple machines** with auto-healing, load balancing, zero-downtime updates and automated scaling.
 
 > **Rule of thumb**: Use **Docker Compose** for quick local development on 1 machine. Use **K8s** for managing production workloads across clusters.
-
-### Container Runtimes & CRI Tools
-Kubernetes does not interact with Docker directly anymore; it uses the **Container Runtime Interface (CRI)**:
-- **`crictl`**: CLI tool designed to inspect and debug CRI-compatible container runtimes directly on cluster nodes.
-- **`nerdctl`**: A Docker-compatible CLI for `containerd`.
 
 ---
 
@@ -160,11 +150,8 @@ Each of them runs as pods that consume memory. With only **1 GB of RAM per VM**,
 
 ---
 
-## 4. What is K3d & Minikube?
+## 4. What is K3d?
 
-Different tools exist to run local Kubernetes clusters for development:
-
-### 1. K3d (Containerized K3s)
 While **K3s** runs directly on a VM or physical node, **K3d** runs K3s nodes inside **Docker containers**.
 
 ```text
@@ -180,26 +167,16 @@ Create a multi-node K8s cluster in seconds:
 k3d cluster create
 ```
 
-### 2. Minikube
-**Minikube** is a single-node local Kubernetes cluster tool. It can run inside a Virtual Machine hypervisor (e.g., VirtualBox, KVM) or via Docker/Podman drivers.
-```bash
-minikube start
-minikube service my-service --url
-```
-
-> **When to pick which?**: Choose **K3d** for rapid multi-node cluster simulation inside Docker containers (ideal for local multi-node testing and fast CI/CD pipelines). Choose **Minikube** for single-node local development when you need a rich set of built-in addons (e.g., Ingress, Dashboard, Metrics Server) and a closer-to-production VM feature set.
-
 ---
 
-## 5. Relationship & Hierarchy (K8s, K3s, K3d, Minikube)
+## 5. Relationship & Hierarchy (K8s, K3s, K3d)
 
 ```text
                       Kubernetes (K8s)
-                       │           │
-           Lightweight │           │ Local Single-Node
-          Distribution │           │ Test Environment
-                       ▼           ▼
-                      K3s       Minikube
+                       │
+           Lightweight │
+          Distribution ▼
+                      K3s
                        │
        Runs inside     │
      Docker Containers ▼
@@ -267,53 +244,46 @@ The smallest deployable unit in K8s. A Pod wraps one (or occasionally more helpe
 
 - **Shared Network**: Containers in the same Pod share the same network namespace and can communicate via `localhost`.
 - **Shared Storage**: Containers in the same Pod can mount and share identical volume storage.
-- **Imperative Creation**:
-  - `kubectl run nginx --image=nginx` (Creates a **Pod** directly — since v1.18+).
-  - `kubectl create deployment nginx --image=nginx` (Creates a **Deployment**).
 
 ---
 
-### 6.4 Controller Evolution: ReplicationController vs ReplicaSet
+### 6.4 ReplicaSet
 
-To keep multiple Pod instances running simultaneously, K8s relies on replication controllers:
+A **ReplicaSet** keeps a fixed number of identical Pods running. It finds its Pods through a **label selector** (`spec.selector.matchLabels`): if a Pod with that label dies, it creates a new one; if there are too many, it removes one.
 
-- **ReplicationController (Legacy)**: Older controller enforcing pod replica counts.
-- **ReplicaSet (Modern)**: The modern replication engine. Unlike ReplicationControllers, ReplicaSets use powerful **Label Selectors** (`spec.selector.matchLabels`). This allows ReplicaSets to acquire and manage Pods created independently or prior to the ReplicaSet creation.
+ReplicaSets are not written by hand in this project: each Deployment creates one.
 
 ```text
 Deployment ──> ReplicaSet ──> Pod 1, Pod 2, Pod 3
 ```
 
-#### 3 Ways to Scale Pod Replicas:
-1. **Declarative**: Update `replicas: N` in definition file $\rightarrow$ `kubectl apply -f manifest.yml`
-2. **Imperative**: `kubectl scale --replicas=6 -f manifest.yml` or `kubectl scale replicaset myapp-replicaset --replicas=6`
-3. **Autoscaling**: Automatically scale based on CPU/RAM load using Horizontal Pod Autoscaler (HPA).
+The number of Pods comes from `replicas: N` in the Deployment manifest. In p2, `app2-deploy` has `replicas: 3`, so its ReplicaSet keeps 3 Pods running. To change it, edit the manifest and apply it again (`kubectl apply -f`).
 
 ---
 
 ### 6.5 Deployment & Rollout Management
 
-Ensures that the desired number of Pods are running and healthy at all times, while managing application updates, revisions and rollbacks.
+Ensures that the desired number of Pods are running and healthy at all times, while managing application updates.
 
 *Analogy: A safety & operations manager ensuring active instances match desired state and managing safe upgrades.*
 
 A Deployment is declared in a manifest with `apiVersion: apps/v1` and `kind: Deployment` (see [`p2/apps/app1/app1-deployment.yaml`](../p2/apps/app1/app1-deployment.yaml)). For the other resource types `kind` can take, see [Core Manifest Fields](#core-manifest-fields).
 
-#### Rollouts & Rollbacks:
-When updating a container image or configuration, Deployments execute a **Rolling Update** by default (gradually replacing old Pods with new ones without service downtime).
+#### Rolling Updates:
+When updating a container image or configuration, Deployments execute a **Rolling Update** by default: they create a new ReplicaSet and gradually replace old Pods with new ones without service downtime. This is what happens in p3 when Argo CD switches the image from `v1` to `v2`.
 
-| Command | Purpose |
-|---|---|
-| `kubectl rollout status deployment/myapp` | Monitor live rollout progress |
-| `kubectl rollout history deployment/myapp` | View revision history |
-| `kubectl rollout undo deployment/myapp` | Roll back to the previous stable revision |
+Follow it live with:
+
+```bash
+kubectl rollout status deployment/<name> -n <namespace>
+```
 
 ---
 
 ### 6.6 Networking & Service Types Deep-Dive
 
 #### Pod Networking & CNI
-Every Pod in K8s receives its own unique IP address. Kubernetes delegates internal cluster networking to **Container Network Interface (CNI)** plugins (e.g., Flannel, Calico, Cilium, Weave Net).
+Every Pod in K8s receives its own unique IP address. Kubernetes delegates internal cluster networking to **Container Network Interface (CNI)** plugins. K3s uses **Flannel**.
 
 #### Pod Networking Between Nodes in K3s: Flannel
 
@@ -342,17 +312,14 @@ A **Service** provides a stable IP address, DNS entry, and load balancing for Po
 External/Internal Request ──> Service ──> Pod 1, Pod 2, Pod 3
 ```
 
-#### The 3 Core Service Types:
+#### Service Types Used in This Project
 
 1. **`ClusterIP` (Default)**:
    - Assigns a virtual IP address **internal to the cluster**.
-   - Enables communication between internal application tiers (e.g., Frontend $\rightarrow$ Backend $\rightarrow$ Database).
-2. **`NodePort`**:
-   - Exposes the service externally on each Node's IP at a static port (Port Range: **`30000-32767`**).
-   - Maps `NodePort` $\rightarrow$ `Service Port` $\rightarrow$ `Target Container Port`.
-   - Load balances requests randomly across matching Pods across nodes.
-3. **`LoadBalancer`**:
-   - Integrates with external cloud provider load balancers (AWS ELB, GCP LB, Azure LB) or bare-metal load balancers (MetalLB) to direct external internet traffic into the cluster.
+   - Used by the three apps in p2 (`app1-svc`, `app2-svc`, `app3-svc`): only Traefik needs to reach them, from inside the cluster.
+2. **`LoadBalancer`**:
+   - Exposes a Service outside the cluster. On a cloud it gets an external load balancer; in K3s, **servicelb** opens the ports on the node's IP instead.
+   - Used by Traefik itself, created by K3s (see [How Traffic Reaches Traefik](#how-traffic-reaches-traefik-servicelb)).
 
 #### How a Service Finds Its Pods: Selector, `port` and `targetPort`
 
@@ -465,14 +432,13 @@ Each `kind` belongs to a specific API group, so `apiVersion` and `kind` must mat
 |---|---|---|---|
 | `Pod` | `v1` | Smallest deployable unit: one or more containers | — (created by Deployments) |
 | `Service` | `v1` | Stable IP/DNS name in front of a set of Pods | p2 |
-| `ConfigMap` / `Secret` | `v1` | Configuration / sensitive data injected into Pods | — |
 | `Namespace` | `v1` | Logical isolation of resources inside a cluster | p3 (`argocd`, `dev`) |
 | `Deployment` | `apps/v1` | Manages ReplicaSets, rolling updates and rollbacks | p2 |
 | `ReplicaSet` | `apps/v1` | Keeps N identical Pods running (usually created by a Deployment) | — (created by Deployments) |
-| `StatefulSet` | `apps/v1` | Pods with stable identity and storage (databases) | — |
-| `DaemonSet` | `apps/v1` | One Pod per node (log agents, monitoring) | — |
+| `StatefulSet` | `apps/v1` | Pods with stable identity and storage | — (`argocd-application-controller`, installed by Argo CD in p3) |
+| `DaemonSet` | `apps/v1` | One Pod per node | — (`svclb-traefik`, created by K3s servicelb in p2) |
 | `Ingress` | `networking.k8s.io/v1` | HTTP routing by host/path to Services | p2 |
-| `Application` | `argoproj.io/v1alpha1` | Argo CD custom resource (CRD) syncing a Git repo to the cluster | p3 (planned) |
+| `Application` | `argoproj.io/v1alpha1` | Argo CD custom resource (CRD) syncing a Git repo to the cluster | p3 ([`wil-playground`](../p3/confs/application.yaml)) |
 
 This list is not exhaustive: **CRDs** (Custom Resource Definitions) let tools such as Argo CD add new `kind`s to the cluster. To list every `kind` the cluster you are connected to supports, with its API group:
 
@@ -482,70 +448,72 @@ kubectl api-resources
 
 ---
 
-### Complete End-to-End Manifest Example (Deployment + Service + Ingress)
+### End-to-End Example from p2 (Deployment + Service + Ingress)
 
-The following YAML demonstrates how a **Deployment**, **Service** and **Ingress** connect together via **Labels and Selectors**:
+The manifests of `app2` in p2 show how a **Deployment**, a **Service** and an **Ingress** connect together via **names, labels and selectors**:
 
 ```yaml
-# 1. Deployment (Application Workload)
+# 1. Deployment (p2/apps/app2/app2-deployment.yaml)
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: my-web-app
-  namespace: default
+  name: app2-deploy
+  labels:
+    app: app2
 spec:
   replicas: 3
   selector:
     matchLabels:
-      app: my-web-app
+      app: app2
   template:
     metadata:
       labels:
-        app: my-web-app
+        app: app2              # Label carried by every Pod
     spec:
       containers:
-      - name: nginx
-        image: nginx:1.25
+      - name: app2-container
+        image: paulbouwer/hello-kubernetes:1.10.1
         ports:
-        - containerPort: 80
+        - containerPort: 8080
+        env:
+        - name: MESSAGE
+          value: "Hello from app2"
 ---
-# 2. Service (Internal Load Balancer & Stable Endpoint)
+# 2. Service (p2/apps/app2/app2-service.yaml)
 apiVersion: v1
 kind: Service
 metadata:
-  name: my-web-service
-  namespace: default
+  name: app2-svc
 spec:
   type: ClusterIP
-  selector:
-    app: my-web-app        # Matches the Pod labels defined in Deployment above
   ports:
-  - port: 80              # Internal cluster service port
-    targetPort: 80        # Container port listening inside Pod
+  - port: 80                   # Service port inside the cluster
+    targetPort: 8080           # Container port inside the Pod
+  selector:
+    app: app2                  # Matches the Pod label above
 ---
-# 3. Ingress (External HTTP Routing)
+# 3. Ingress (p2/ingress/ingress.yaml, rule for app2.com only)
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: my-web-ingress
-  namespace: default
+  name: app1-ingress
 spec:
   rules:
-  - host: app.local
+  - host: app2.com
     http:
       paths:
       - path: /
         pathType: Prefix
         backend:
           service:
-            name: my-web-service  # Directs traffic to the Service above
+            name: app2-svc     # Sends the traffic to the Service above
             port:
               number: 80
 ```
 
 > **How they link together**:
-> 1. **Ingress $\rightarrow$ Service**: `backend.service.name: my-web-service` matches `Service.metadata.name: my-web-service`.
-> 2. **Service $\rightarrow$ Pods**: `Service.spec.selector.app: my-web-app` matches `Deployment.spec.template.metadata.labels.app: my-web-app`.
+> 1. **Ingress $\rightarrow$ Service**: `backend.service.name: app2-svc` matches `Service.metadata.name: app2-svc`.
+> 2. **Service $\rightarrow$ Pods**: `Service.spec.selector.app: app2` matches `Deployment.spec.template.metadata.labels.app: app2`.
 
 ---
 
@@ -553,25 +521,25 @@ spec:
 
 ### Request Flow
 ```text
-Internet
+Host machine (Host: app2.com)
    │
    ▼
-Ingress (Host & Path Routing: app.local /)
+Ingress (Host & Path Routing: app2.com /)
    │
    ▼
-Service (Stable Endpoint: my-web-service:80)
+Service (Stable Endpoint: app2-svc:80)
    │
    ▼
-Deployment (Lifecycle & Replica Manager)
+Deployment (Lifecycle & Replica Manager: app2-deploy)
    │
    ▼
-ReplicaSet (Pod Count & Label Matcher: app=my-web-app)
+ReplicaSet (Pod Count & Label Matcher: app=app2, 3 replicas)
    │
    ▼
 Pod (Container Wrapper & Shared Network/Storage)
    │
    ▼
-Container (Nginx Container on port 80)
+Container (hello-kubernetes on port 8080)
 ```
 
 ### Physical / Virtual Infrastructure View
@@ -614,12 +582,6 @@ kubectl apply -f manifest.yaml   # Create or update resources
 kubectl delete -f manifest.yaml  # Delete resources defined in manifest
 ```
 
-### Imperative Resource Creation
-```bash
-kubectl run nginx --image=nginx                # Create a Pod directly
-kubectl create deployment nginx --image=nginx # Create a Deployment
-```
-
 ### Inspection & Debugging
 ```bash
 kubectl get nodes                        # List cluster nodes
@@ -627,15 +589,14 @@ kubectl get pods -o wide                 # List Pods with IP and assigned Node
 kubectl get services                     # List active Services
 kubectl get deployments                  # List active Deployments
 kubectl get all                          # List all active resources in namespace
-kubectl describe pod nginx               # View detailed lifecycle events & status
+kubectl describe pod <pod-name>          # View detailed lifecycle events & status
 kubectl edit deployment myapp-deployment # Edit live manifest directly in cluster
 ```
 
-### Rollout & History Management
+### Rollout Status
 ```bash
-kubectl rollout status deployment/myapp-deployment  # Monitor update rollout status
-kubectl rollout history deployment/myapp-deployment # View deployment revisions
-kubectl rollout undo deployment/myapp-deployment    # Rollback to previous deployment
+kubectl rollout status deployment/<name>                                    # Monitor a rolling update
+kubectl -n argocd rollout status statefulset/argocd-application-controller  # Used by p3 setup.sh
 ```
 
 ---
@@ -648,12 +609,12 @@ kubectl rollout undo deployment/myapp-deployment    # Rollback to previous deplo
 | **Node** | A machine (VM or physical server) in the cluster |
 | **Pod** | A wrapper around one or more containers (sharing network & storage) |
 | **ReplicaSet** | Ensures exact count of Pod replicas via label selectors |
-| **Deployment** | Manages ReplicaSets, rolling updates, history, and rollbacks |
-| **Service** | Stable entry point for Pods (`ClusterIP`, `NodePort`, `LoadBalancer`) |
+| **Deployment** | Manages ReplicaSets and rolling updates |
+| **Service** | Stable entry point for Pods (`ClusterIP` for the apps, `LoadBalancer` for Traefik) |
 | **Ingress** | Routes external HTTP/HTTPS traffic into internal Services |
-| **CNI** | Cluster networking plugin (Flannel, Calico, Cilium) assigning Pod IPs |
+| **CNI** | Cluster networking plugin assigning Pod IPs (Flannel in K3s) |
 | **Manifest** | YAML blueprint defining desired cluster state |
-| **k3s / Minikube** | Lightweight/local K8s environments for development & testing |
+| **K3s / K3d** | Lightweight K8s distribution / K3s running inside Docker containers |
 | **K3s server / agent** | Same binary: control plane + workloads / workloads only |
 | **Node token** | Secret an agent presents to join the cluster |
 | **Kubeconfig** | File telling `kubectl` where the API is and which credentials to use |
@@ -682,10 +643,6 @@ The 42 School **Inception-of-Things (IoT)** project builds up DevOps expertise s
 - **Kubernetes Tools Installation**: [https://kubernetes.io/docs/tasks/tools/](https://kubernetes.io/docs/tasks/tools/)
 - **K3s Documentation**: [https://docs.k3s.io/](https://docs.k3s.io/)
 - **K3d Documentation**: [https://k3d.io/](https://k3d.io/)
-- **Minikube Documentation**: [https://minikube.sigs.k8s.io/docs/](https://minikube.sigs.k8s.io/docs/)
-- **Kubernetes Container Runtimes (CRI)**: [https://kubernetes.io/docs/setup/production-environment/container-runtimes/](https://kubernetes.io/docs/setup/production-environment/container-runtimes/)
-- **`crictl` Debugging Tool**: [https://kubernetes.io/docs/tasks/debug/debug-cluster/crictl/](https://kubernetes.io/docs/tasks/debug/debug-cluster/crictl/)
-- **`nerdctl` CLI Project**: [https://github.com/containerd/nerdctl](https://github.com/containerd/nerdctl)
 - **K3s Architecture (server vs agent)**: [https://docs.k3s.io/architecture](https://docs.k3s.io/architecture)
 - **K3s Server CLI flags**: [https://docs.k3s.io/cli/server](https://docs.k3s.io/cli/server)
 - **K3s Agent CLI flags**: [https://docs.k3s.io/cli/agent](https://docs.k3s.io/cli/agent)

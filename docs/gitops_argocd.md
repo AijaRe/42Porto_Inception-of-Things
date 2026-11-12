@@ -1,6 +1,6 @@
-# GitOps, CI/CD & Argo CD
+# GitOps, CD & Argo CD
 
-A reference document explaining the core concepts of **GitOps**, **Continuous Integration (CI)**, **Continuous Deployment (CD)** and **Argo CD** as used in Part 3 (`p3`) of **Inception-of-Things**.
+A reference document explaining the core concepts of **GitOps**, **Continuous Deployment (CD)** and **Argo CD** as used in Part 3 (`p3`) of **Inception-of-Things**. Continuous Integration (CI) is not part of this project; it is covered as a next step at the end.
 
 ---
 
@@ -25,20 +25,57 @@ In GitOps, CD means:
 - The GitOps controller detects the new commit.
 - The cluster updates itself automatically within seconds.
 
+> **Which one does Argo CD do?** Only **CD**. It does not build or test code: it takes the manifests already in Git and syncs them to the cluster. Building and testing is the job of CI (see [Next Steps: Continuous Integration](#5-next-steps-continuous-integration-ci)).
+
 ---
 
-## 3. What is Continuous Integration (CI)?
+## 3. What is Argo CD?
+
+**Argo CD** is a declarative, GitOps continuous delivery tool built specifically for **K8s**.
+
+### Key Characteristics:
+- **K8s-Native**: Runs as a set of controllers and custom resources inside the cluster (under the `argocd` namespace).
+- **Automated Synchronization**: Periodically syncs Git repository state to Kubernetes resources.
+- **Web UI & CLI**: Visual dashboard displaying live cluster status, pod logs, resource trees, and sync statuses.
+- **Health Checks**: Monitors health of deployments, pods, and services out of the box.
+
+### Argo CD in p3
+
+The flow in p3:
+
+1. **Infrastructure**: `p3/scripts/setup.sh` creates the K3d cluster and the `argocd` and `dev` namespaces.
+2. **Argo CD**: the same script installs Argo CD in the `argocd` namespace.
+3. **Application**: it then applies [`p3/confs/application.yaml`](../p3/confs/application.yaml), which tells Argo CD to watch the `manifests` folder of the GitHub repository and deploy it to the `dev` namespace.
+4. **Deploy a new version**: changing the image tag (e.g., `v1` → `v2`) in the repository and pushing to `main` is enough. Argo CD sees the cluster is `OutOfSync` and updates the Pods, with no manual `kubectl`.
+5. **Self-heal**: with `selfHeal: true`, if someone deletes or edits a resource by hand, Argo CD restores what Git says. With `prune: true`, resources removed from Git are removed from the cluster too.
+
+---
+
+## 4. Summary Cheat Sheet
+
+| Concept | Think of it as |
+|---|---|
+| **GitOps** | Git as the single source of truth for both code and cluster infrastructure |
+| **CD** | Automatically deploying manifests to the live environment |
+| **Argo CD** | The automated robot inside K8s that keeps the cluster matching Git |
+| **Application** | Argo CD resource saying which repo/path to sync to which namespace |
+
+---
+
+## 5. Next Steps: Continuous Integration (CI)
+
+p3 stops at CD: the image (`v1` / `v2`) is already built and published, and only the manifest changes. In a real pipeline, a **CI** stage comes before it.
+
+### What is CI?
 
 **Continuous Integration (CI)** is the practice of automatically building, testing and validating code whenever developers push changes to a shared repository.
 
-In a modern software pipeline, CI handles:
+CI usually handles:
 - Running automated unit and integration tests.
 - Linting and scanning code for security vulnerabilities.
 - Building Docker container images and pushing them to a container registry (e.g., Docker Hub, GitHub Packages).
 
----
-
-## 4. CI vs. CD
+### CI vs. CD
 
 | Aspect | Continuous Integration (CI) | Continuous Deployment (CD) |
 |---|---|---|
@@ -47,71 +84,19 @@ In a modern software pipeline, CI handles:
 | **Output** | Tested code & built Docker images | Running applications inside the live K8s cluster |
 | **Tools** | GitHub Actions, Jenkins, GitLab CI | Argo CD, Flux CD |
 
-> **In GitOps & Inception-of-Things**:
-> - **CI** tests code and builds Docker images.
-> - **CD (Argo CD)** takes the updated K8s manifests and syncs them to the live cluster.
+### The Full Pipeline
 
----
+```text
+Developer pushes code
+      │
+      ▼
+CI (e.g., GitHub Actions) ── tests, builds image myapp:v2, pushes it to Docker Hub
+      │
+      ▼
+Manifest updated in Git ── image tag v1 → v2 (by hand or by the CI itself)
+      │
+      ▼
+CD (Argo CD) ── detects OutOfSync, updates the Pods in the cluster
+```
 
-## 5. What is Argo CD?
-
-**Argo CD** is a declarative, GitOps continuous delivery tool built specifically for **K8s**.
-
-### Key Characteristics:
-- **K8s-Native**: Runs as a set of controllers and custom resources inside the cluster (under the `argocd` namespace).
-- **Automated Synchronization**: Periodically syncs Git repository state to Kubernetes resources.
-- **Web UI & CLI**: Visual dashboard displaying live cluster status, pod logs, resource trees, and sync statuses.
-- **Multitenancy & Health Checks**: Monitors health of deployments, pods, and services out of the box.
-
----
-
-## 6. Summary Cheat Sheet
-
-| Concept | Think of it as |
-|---|---|
-| **GitOps** | Git as the single source of truth for both code and cluster infrastructure |
-| **CI** | Building and testing code before deployment |
-| **CD** | Automatically deploying manifests to the live environment |
-| **Argo CD** | The automated robot inside K8s that keeps the cluster matching Git |
-
----
-
-## 7. Real-World Storyline: A Day in the Life of a Feature Release
-
-### The Characters
-- **Charlie (IT / Infrastructure Ops)**: Manages physical hardware, VMs and cluster infrastructure.
-- **Bob (DevOps / Platform Engineer)**: Builds CI/CD pipelines, configures Argo CD and maintains K8s manifests.
-- **Alice (Software Developer)**: Writes application code and user features.
-
----
-
-### The Workflow in Action
-
-#### 1. Infrastructure Setup (IT Team — Charlie)
-- **Charlie** provisions the servers/VMs and installs the lightweight **K3s / K3d** cluster.
-- Charlie passes the running cluster to Bob.
-
-#### 2. Platform & GitOps Setup (DevOps — Bob)
-- **Bob** installs **Argo CD** inside the cluster (`argocd` namespace).
-- Bob configures Argo CD to watch the company's GitHub repository for any changes to YAML manifests.
-
-#### 3. Writing Code (Developer — Alice)
-- **Alice** builds a new feature for the web application on her laptop.
-- She pushes her code to GitHub and opens a Pull Request.
-
-#### 4. Continuous Integration (CI Phase — Automated)
-- Pushing to GitHub triggers the **CI Pipeline** (e.g., GitHub Actions).
-- **CI** automatically runs unit tests, scans code for bugs, builds a new Docker image (`myapp:v2.0`) and pushes it to Docker Hub.
-
-#### 5. Triggering GitOps (Updating Desired State)
-- Alice (or Bob) updates `deployment.yaml` in the Git repository, changing the image tag from `v1.0` to `v2.0`.
-- She commits and merges the change to the `main` branch in Git.
-
-#### 6. Continuous Deployment (CD Phase — Argo CD)
-- **Argo CD** polls GitHub, notices `deployment.yaml` was updated to `v2.0` and flags the cluster as `OutOfSync`.
-- Argo CD automatically pulls the new manifest and updates the live Pods to `v2.0` in seconds—without anyone needing SSH access or running manual `kubectl` commands.
-
-#### 7. Self-Healing in Production
-- Later that night, a junior engineer accidentally runs `kubectl delete deployment web-app`.
-- Within seconds, **Argo CD** detects that the live cluster state no longer matches Git, flags the drift and automatically restores the deployment back to normal!
-
+A natural next step after this project is to add a CI workflow (e.g., GitHub Actions) that builds the image and updates the tag in the manifests repository, so a code push ends up in the cluster with no manual step.

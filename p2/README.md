@@ -195,7 +195,7 @@ Traefik runs as a `LoadBalancer` Service with `EXTERNAL-IP` `192.168.56.110`, ex
 | How does the `Host` header choose the app? Why does app3 answer by default? | [The Host Header and the Default Rule](../docs/k8s_concepts.md#the-host-header-and-the-default-rule) |
 | What is the full path of a request? | [Full Request Flow in p2](../docs/k8s_concepts.md#full-request-flow-in-p2) |
 | How does a Service find its pods? What are `port` and `targetPort`? | [Selector, port and targetPort](../docs/k8s_concepts.md#how-a-service-finds-its-pods-selector-port-and-targetport) |
-| How are the 3 replicas of app2 created? | [ReplicaSet](../docs/k8s_concepts.md#64-controller-evolution-replicationcontroller-vs-replicaset) / [Deployment](../docs/k8s_concepts.md#65-deployment--rollout-management) |
+| How are the 3 replicas of app2 created? | [ReplicaSet](../docs/k8s_concepts.md#64-replicaset) / [Deployment](../docs/k8s_concepts.md#65-deployment--rollout-management) |
 | Why does the server script use `--flannel-iface=eth1`? | [Flannel's Interface](../docs/k8s_concepts.md#choosing-flannels-interface---flannel-iface) |
 | How does `--provision-with DeployApps` work? | [Named Provisioners](../docs/vagrant.md#named-provisioners) |
 

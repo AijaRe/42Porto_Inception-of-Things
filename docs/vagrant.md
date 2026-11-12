@@ -127,6 +127,18 @@ end
 
 When Vagrant behaves strangely, `vagrant validate` checks the syntax first. If a VM is left behind after a failed `destroy`, `VBoxManage list vms` shows what VirtualBox still knows, and `VBoxManage unregistervm <VM_ID> --delete` removes it (only when sure it is no longer needed).
 
+If `vagrant up` fails with **`VERR_VMX_IN_VMX_ROOT_MODE`**, KVM is loaded and holds the CPU's virtualization extensions that VirtualBox needs. Unload it on the machine where Vagrant runs:
+
+```bash
+sudo modprobe -r kvm_intel kvm
+```
+
+If it fails with **`VERR_VMX_NO_VMX`** (VT-x is not available), Vagrant is running inside a VM that has no access to virtualization. Turn on nested virtualization for that VM from the physical computer, with the VM shut down:
+
+```bash
+VBoxManage modifyvm "<vm-name>" --nested-hw-virt on
+```
+
 ## 10. Next Steps
 
 Features this project does not need, in the order of this document.

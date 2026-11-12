@@ -107,7 +107,7 @@ Host:  ~/Inception-of-Things/p1/   ◄──── same files ────►   
 
 In p1 this is how the K3s **node token** reaches the worker: the server copies it to `/vagrant/k3s-token` and the worker waits for that file before joining. The token is a secret, so `k3s-token` is in `.gitignore`. In p2, `deploy_apps.sh` reads the manifests from `/vagrant/apps/` the same way.
 
-Depending on box and provider, the folder can be a live share or a one-time `rsync` copy, and with `rsync` a file written by one VM would not reach the other. In this project `mount | grep vagrant` shows `type vboxsf`: a live VirtualBox shared folder, so the token appears for the worker immediately.
+Depending on box and provider, the folder can be a live share or a one-time `rsync` copy, and with `rsync` a file written by one VM would not reach the other. p1 relies on a live share: `mount | grep vagrant` inside a VM must show `type vboxsf` (VirtualBox shared folder), so the token appears for the worker immediately.
 
 ## 8. Triggers
 

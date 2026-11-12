@@ -93,9 +93,9 @@ k get nodes -o wide
 ```
 
 ```text
-NAME         STATUS   ROLES           VERSION        INTERNAL-IP
-gamado-xs    Ready    control-plane   v1.36.3+k3s1   192.168.56.110
-gamado-xsw   Ready    <none>          v1.36.3+k3s1   192.168.56.111
+NAME         STATUS   ROLES           INTERNAL-IP
+gamado-xs    Ready    control-plane   192.168.56.110
+gamado-xsw   Ready    <none>          192.168.56.111
 ```
 
 `ip a` only shows the address the OS assigned; `INTERNAL-IP` is the one K3s registered. Both must be `192.168.56.x`. If K3s shows `10.0.2.15`, it picked the NAT interface (see [Private Network](../docs/vagrant.md#5-private-network)); the scripts prevent it with `--node-ip`.
@@ -108,7 +108,7 @@ On the server, `ExecStart` must run `k3s server --node-ip=192.168.56.110 ...` (o
 sudo systemctl cat k3s
 ```
 
-The API must listen on port 6443 for the agent and `kubectl`, as `192.168.56.110:6443 ... "k3s-server"`:
+The API must listen on port 6443 for the agent and `kubectl`: `k3s-server` on `192.168.56.110:6443`, plus `127.0.0.1` and `[::1]` for local access:
 
 ```bash
 sudo ss -tlnp | grep 6443
@@ -118,6 +118,12 @@ The worker shows `<none>` under ROLES because that column is built from `node-ro
 
 ```bash
 k label node gamado-xsw node-role.kubernetes.io/worker=worker
+```
+
+To remove it, end the label name with `-`:
+
+```bash
+k label node gamado-xsw node-role.kubernetes.io/worker-
 ```
 
 ---

@@ -146,9 +146,9 @@ k describe ingress
 Rules:
   Host        Path  Backends
   ----        ----  --------
-  app1.com    /     app1-svc:80 (10.42.0.20:8080)
-  app2.com    /     app2-svc:80 (10.42.0.18:8080,10.42.0.17:8080,10.42.0.22:8080)
-  *           /     app3-svc:80 (10.42.0.21:8080)
+  app1.com    /     app1-svc:80 (<pod-ip>:8080)
+  app2.com    /     app2-svc:80 (<pod-ip>:8080,<pod-ip>:8080,<pod-ip>:8080)
+  *           /     app3-svc:80 (<pod-ip>:8080)
 ```
 
 Traefik as a `LoadBalancer` Service with `EXTERNAL-IP` `192.168.56.110`, exposed by the `svclb-traefik` Pod:

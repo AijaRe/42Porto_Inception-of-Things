@@ -191,7 +191,7 @@ An **Ingress** routes HTTP traffic from outside the cluster to Services, by host
 
 ### Ingress vs Ingress Controller
 
-The Ingress is only a set of rules in YAML; it does nothing by itself. The **Ingress controller** is the program that reads the rules and routes the traffic. K3s ships **Traefik** as its controller, which is why p2 keeps it and p1 disables it. The p2 Ingress (`app1-ingress`, holding the rules of the three apps) has no `ingressClassName`, so `kubectl get ingress` shows `CLASS <none>`; it still works because K3s marks `traefik` as the **default IngressClass**.
+The Ingress is only a set of rules in YAML; it does nothing by itself. The **Ingress controller** is the program that reads the rules and routes the traffic. K3s ships **Traefik** as its controller, which is why p2 keeps it and p1 disables it. The p2 Ingress (`apps-ingress`, holding the rules of the three apps) has no `ingressClassName`, so `kubectl get ingress` shows `CLASS <none>`; it still works because K3s marks `traefik` as the **default IngressClass**.
 
 ### How Traffic Reaches Traefik: servicelb
 
@@ -286,7 +286,7 @@ spec:
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: app1-ingress
+  name: apps-ingress
 spec:
   rules:
   - host: app2.com

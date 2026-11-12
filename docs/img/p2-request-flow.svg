@@ -16,7 +16,7 @@
 <text x="310.0" y="227.5" text-anchor="middle" dominant-baseline="central" font-size="12.5" font-weight="400" fill="#5DCAA5">reads Host, picks the rule</text>
 <rect x="480" y="190" width="150" height="56" rx="8" fill="#3C3489" stroke="#7F77DD" stroke-width="1"/>
 <text x="555.0" y="208.5" text-anchor="middle" dominant-baseline="central" font-size="14.5" font-weight="400" fill="#EEEDFE">Ingress rules</text>
-<text x="555.0" y="227.5" text-anchor="middle" dominant-baseline="central" font-size="12.5" font-weight="400" fill="#AFA9EC">app1-ingress</text>
+<text x="555.0" y="227.5" text-anchor="middle" dominant-baseline="central" font-size="12.5" font-weight="400" fill="#AFA9EC">apps-ingress</text>
 <path d="M480 218 L454 218" fill="none" stroke="#B4B2A9" stroke-width="1.2"  marker-end="url(#a)"/>
 <path d="M310 246 L310 266" fill="none" stroke="#B4B2A9" stroke-width="1.2"  marker-end="url(#a)"/>
 <rect x="170" y="270" width="280" height="56" rx="8" fill="#3C3489" stroke="#7F77DD" stroke-width="1"/>

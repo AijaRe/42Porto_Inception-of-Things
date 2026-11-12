@@ -174,7 +174,7 @@ Part 1 built an empty cluster; Part 2 runs applications on one and exposes them.
 
 <img src="../docs/img/p2-host-routing.svg" alt="The Ingress holds three Host rules that Traefik applies" width="100%">
 
-*Routing: one Ingress object, `app1-ingress`, holds three rules and Traefik applies them by `Host` header. `app1.com` and `app2.com` have their own rules; any other name, or the bare IP, falls to the rule without `host` and reaches app3.*
+*Routing: one Ingress object, `apps-ingress`, holds three rules and Traefik applies them by `Host` header. `app1.com` and `app2.com` have their own rules; any other name, or the bare IP, falls to the rule without `host` and reaches app3.*
 
 ---
 

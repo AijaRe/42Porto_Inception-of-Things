@@ -10,6 +10,7 @@ A two-node K3s cluster on two Debian VMs: the server `gamado-xS` (`192.168.56.11
   - [Resources](#resources)
   - [Network and Node IPs](#network-and-node-ips)
   - [Server Mode](#server-mode)
+  - [Fresh Start on a New Machine](#fresh-start-on-a-new-machine)
 - [Concepts Behind Part 1](#concepts-behind-part-1)
 
 ---
@@ -124,6 +125,24 @@ To remove it, end the label name with `-`:
 
 ```bash
 k label node gamado-xsw node-role.kubernetes.io/worker-
+```
+
+### Fresh Start on a New Machine
+
+On a machine where the project never ran, rebuild everything from scratch. This proves the token still travels from the server to the worker there:
+
+```bash
+vagrant destroy -f
+```
+
+```bash
+vagrant up
+```
+
+The token only reaches the worker if `/vagrant` is a live VirtualBox shared folder. Expect `type vboxsf`:
+
+```bash
+vagrant ssh gamado-xSW -c "mount | grep vagrant"
 ```
 
 ---

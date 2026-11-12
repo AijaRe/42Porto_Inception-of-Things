@@ -177,9 +177,9 @@ Vagrant builds two Debian VMs from one Vagrantfile, each with 1 CPU, 1 GB of RAM
 
 *Provisioning: the server writes its node token to the shared `/vagrant` folder; the worker reads it and joins through the API on port 6443.*
 
-<img src="../docs/img/p1-cluster.svg" alt="Who talks to whom in the cluster" width="100%">
+<img src="../docs/img/p1-cluster.svg" alt="What runs on each node" width="100%">
 
-*Running cluster: `kubectl` exists only on the server, the agent reaches the same API with the token, and Flannel links the Pod networks of both nodes over `eth1`.*
+*Running cluster: `kubectl` and the admin kubeconfig exist only on the server, which also runs the `kube-system` Pods; Traefik, servicelb and metrics-server are disabled (Part 2 turns the first two back on). The agent reaches the same API with the node token and runs only the Pods assigned to it, and Flannel links the Pod networks of both nodes over `eth1`.*
 
 <img src="../docs/img/p1-request-flow.svg" alt="What happens on kubectl run" width="100%">
 

@@ -182,12 +182,12 @@ kubectl get all -n dev               # wil-playground pod, Deployment and Servic
 
 | Question | Where to read |
 | :--- | :--- |
-| What is K3d, and how is it different from K3s? | [K3d](../docs/k8s_concepts.md#4-what-is-k3d) / [Hierarchy](../docs/k8s_concepts.md#5-relationship--hierarchy-k8s-k3s-k3d) |
+| What is K3d, and how is it different from K3s? | [K3d](../docs/k8s_concepts.md#3-k3d) |
 | What is GitOps? | [What is GitOps?](../docs/gitops_argocd.md#1-what-is-gitops) |
 | CI vs CD: which one does Argo CD do? | [CI vs. CD](../docs/gitops_argocd.md#ci-vs-cd) |
 | What is Argo CD? | [What is Argo CD?](../docs/gitops_argocd.md#3-what-is-argo-cd) |
 | How does `kubectl` find the K3d cluster? | [Kubeconfig](../docs/k8s_concepts.md#kubeconfig-how-kubectl-finds-the-cluster) |
-| How does v1 → v2 roll out? | [Deployment & Rollouts](../docs/k8s_concepts.md#65-deployment--rollout-management) |
+| How does v1 → v2 roll out? | [Deployment & Rollouts](../docs/k8s_concepts.md#deployment-and-rolling-updates) |
 
 ---
 

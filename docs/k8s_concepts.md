@@ -51,27 +51,18 @@ A reference document explaining the core concepts of **K8s**, **K3s**, **K3d** a
   - [Rollout Status](#rollout-status)
 - [10. Summary Cheat Sheet](#10-summary-cheat-sheet)
 - [11. Concepts Progression in Inception-of-Things](#11-concepts-progression-in-inception-of-things)
-- [12. References & Resources](#12-references--resources)
+- [12. Next Steps](#12-next-steps)
+- [13. References & Resources](#13-references--resources)
 
 ---
 
 ## 1. What is Kubernetes (K8s)?
 
-**Kubernetes** or **K8s** is a platform for orchestrating, automating and managing containerized applications at scale.
-
-When running hundreds of containers across multiple machines, K8s automatically handles:
-- **Auto-healing**: Starts crashed containers and stops unresponsive ones.
-- **Scaling**: Scales applications up or down based on load.
-- **Load Balancing**: Distributes network traffic evenly across containers.
-- **Zero-downtime Deployments**: Rolling updates and rollbacks without stopping service.
-- **Storage & Networking**: Manages persistent volumes and internal cluster DNS.
+**Kubernetes** (K8s) runs containers across a group of machines, the **cluster**. You describe the desired state in YAML (which image, how many copies, how to reach them) and K8s keeps the cluster matching it: it restarts crashed containers, spreads traffic between copies and replaces old versions with new ones without downtime.
 
 ### What about Docker Compose?
 
-- **Docker Compose** is designed to manage multi-container applications on a **single machine** (`docker compose up`).
-- **K8s** is designed to manage multi-container applications across a **cluster of multiple machines** with auto-healing, load balancing, zero-downtime updates and automated scaling.
-
-> **Rule of thumb**: Use **Docker Compose** for quick local development on 1 machine. Use **K8s** for managing production workloads across clusters.
+Docker Compose also starts several containers from a YAML file, but only on **one machine**, and it does not watch them afterwards. K8s manages them across **many machines** and keeps correcting them. Compose suits local development; K8s suits running services that must stay up.
 
 ---
 
@@ -634,7 +625,25 @@ The 42 School **Inception-of-Things (IoT)** project builds up DevOps expertise s
 
 ---
 
-## 12. References & Resources
+## 12. Next Steps
+
+Concepts this project does not need, but that come right after it, in the order of this document.
+
+**Local clusters** ([4](#4-what-is-k3d)). Besides K3d, **Minikube** runs a local cluster, in a VM or a container.
+
+**Nodes** ([6.2](#62-node)). `kubectl` talks to the API; on a node, `crictl` goes one level lower and inspects the containers that containerd runs.
+
+**Scaling** ([6.4](#64-replicaset)). Here the number of Pods is fixed in the manifest (`replicas: 3`). `kubectl scale` changes it on the fly, and a **HorizontalPodAutoscaler** (HPA) changes it automatically based on CPU or memory, which needs the metrics-server that p1 disables.
+
+**Rollback** ([6.5](#65-deployment--rollout-management)). When a new version breaks, `kubectl rollout undo` returns a Deployment to its previous ReplicaSet. With GitOps the usual way is to revert the commit and let Argo CD sync.
+
+**Networking** ([6.6](#66-networking--service-types-deep-dive)). K3s ships Flannel, but other CNIs such as **Calico** or **Cilium** add network policies and observability. For Services, the apps here use `ClusterIP` behind Traefik; a `NodePort` Service opens a port (30000-32767) on every node without an Ingress, and on bare metal **MetalLB** gives `LoadBalancer` Services real IPs, a role servicelb plays in K3s.
+
+**Manifests** ([7](#7-what-is-a-k8s-manifest)). The apps take their settings from `env` in the manifest. A **ConfigMap** moves that configuration out of the Deployment, and a **Secret** does the same for passwords and tokens. Pods here keep no data; a database would need a **PersistentVolume** to survive restarts.
+
+---
+
+## 13. References & Resources
 
 - **Kubernetes Documentation - Concepts**: [https://kubernetes.io/docs/concepts/](https://kubernetes.io/docs/concepts/)
 - **Pod Overview**: [https://kubernetes.io/docs/concepts/workloads/pods/pod-overview/](https://kubernetes.io/docs/concepts/workloads/pods/pod-overview/)

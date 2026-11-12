@@ -15,6 +15,7 @@ A reference document explaining the core concepts of **K8s**, **K3s**, **K3d** a
 - [3. K3d](#3-k3d)
 - [4. Cluster and Nodes](#4-cluster-and-nodes)
   - [What Runs on Each Node](#what-runs-on-each-node)
+  - [Namespaces](#namespaces)
 - [5. Pods, ReplicaSets and Deployments](#5-pods-replicasets-and-deployments)
   - [ReplicaSet](#replicaset)
   - [Deployment and Rolling Updates](#deployment-and-rolling-updates)
@@ -108,6 +109,10 @@ A **cluster** is the set of machines working together; each machine is a **node*
 | **Flannel** | Every node | Gives each Pod an IP and connects Pods across nodes. |
 
 In standard K8s these are separate processes. K3s packs them all into the `k3s` binary, so `ps` on a node shows only `k3s server` or `k3s agent`. The server is also a regular node that can run Pods; the agent never runs the control plane.
+
+### Namespaces
+
+A **namespace** is a logical division of the cluster, the same idea as in C++: a scope where names live, so two resources can share a name in different namespaces. Unlike C++, it exists at runtime, so permissions and resource limits can be attached to it, and deleting it deletes everything inside; it is not physical isolation, since every namespace runs on the same nodes. Argo CD lives in `argocd` and deploys the p3 app to `dev`, K3s keeps its own components in `kube-system`, and the p2 apps fall into `default` because they declare none. That is why commands take `-n`, as in `kubectl get pods -n dev`. Not to be confused with Linux kernel namespaces, the mechanism that isolates what each container sees.
 
 ---
 

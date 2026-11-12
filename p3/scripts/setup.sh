@@ -76,6 +76,10 @@ echo "===> Waiting for Argo CD components to be ready (can take several minutes)
 kubectl -n argocd wait --for=condition=Available deployment --all --timeout=900s
 kubectl -n argocd rollout status statefulset/argocd-application-controller --timeout=900s
 
+# Argo CD watches the GitOps repo and deploys it to the dev namespace
+echo "===> Creating the Argo CD Application..."
+kubectl apply -f "$(dirname "$0")/../confs/application.yaml"
+
 echo "===> ArgoCD username: admin"
 echo "===> Initial ArgoCD password:"
 kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d; echo

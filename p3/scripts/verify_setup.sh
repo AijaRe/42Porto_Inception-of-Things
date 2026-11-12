@@ -15,6 +15,10 @@ echo "===> namespace verification"
 kubectl get namespace argocd
 kubectl get namespace dev
 
+echo "===> Argo CD Application (expect Synced / Healthy)"
+kubectl get applications -n argocd
+kubectl get all -n dev
+
 echo "===> Argo CD UI test"
 echo "1) Start port-forward: kubectl -n argocd port-forward svc/argocd-server 8081:443"
 echo "2) Open URL: https://localhost:8081"

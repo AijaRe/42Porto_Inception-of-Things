@@ -51,7 +51,8 @@ The `Vagrantfile` is Ruby. It sets the box, and inside a provider block, the Vir
 
 ```ruby
 Vagrant.configure("2") do |config|
-  config.vm.box = "debian/bookworm64"
+  config.vm.box = "ubuntu/jammy64"
+  config.vm.box_url = "https://cloud-images.ubuntu.com/releases/jammy/release/ubuntu-22.04-server-cloudimg-amd64-vagrant.box"
 
   config.vm.define "gamado-xS" do |server|
     server.vm.hostname = "gamado-xS"

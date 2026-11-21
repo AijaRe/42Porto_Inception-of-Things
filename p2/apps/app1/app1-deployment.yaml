@@ -15,10 +15,10 @@ spec:
         app: app1
     spec:
       containers:
-      - name: app1-container
-        image: paulbouwer/hello-kubernetes:1.11.0
-        ports:
-        - containerPort: 8080
-        env:
-        - name: MESSAGE
-          value: "Hello from app1"
+        - name: app1-container
+          image: paulbouwer/hello-kubernetes:1.11.0
+          ports:
+            - containerPort: 8080
+          env:
+            - name: MESSAGE
+              value: "Hello from app1"

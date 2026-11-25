@@ -1,7 +1,7 @@
 # Inception-of-Things (IoT)
 
 This 42 project was done by:
-[Gabriel Affonso](https://github.com/gabzaf)
+[Gabriel Affonso](https://github.com/gabzaf) and
 [Aija Repsa](https://github.com/AijaRe)
 
 

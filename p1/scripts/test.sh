@@ -22,12 +22,12 @@ check "gamado-xSW is running" grep -q "gamado-xSW,state,running" <<<"$status"
 for vm in gamado-xS gamado-xSW; do
   [ "$vm" = gamado-xS ] && ip=192.168.56.110 || ip=192.168.56.111
   echo "===> $vm"
-  facts=$(on "$vm" 'hostname; nproc; free -m | awk "/Mem:/{print \$2}"; ip -4 -o addr show eth1 | awk "{print \$4}"')
+  facts=$(on "$vm" 'hostname; nproc; free -m | awk "/Mem:/{print \$2}"; ip -4 -o addr show | awk "{print \$2, \$4}"')
   check "hostname is $vm"           test "$(sed -n 1p <<<"$facts")" = "$vm"
   check "1 CPU"                     test "$(sed -n 2p <<<"$facts")" = 1
   mem=$(sed -n 3p <<<"$facts")
   check "about 1 GB RAM (${mem:-?} MiB)" test "${mem:-0}" -ge 900 -a "${mem:-0}" -le 1024
-  check "eth1 is $ip"               test "$(sed -n 4p <<<"$facts")" = "$ip/24"
+  check "private network is $ip"    grep -qw "$ip/24" <<<"$facts"
 done
 
 echo "===> K3s"

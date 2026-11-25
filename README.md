@@ -1,5 +1,10 @@
 # Inception-of-Things (IoT)
 
+This 42 project was done by:
+[Gabriel Affonso](https://github.com/gabzaf)
+[Aija Repsa](https://github.com/AijaRe)
+
+
 A System Administration project from the 42 curriculum that practices DevOps tooling: infrastructure as code with **Vagrant**, cluster orchestration with **K3s** and **K3d**, Ingress routing with **Traefik** and **GitOps** continuous deployment with **Argo CD**.
 
 To achieve this efficiently, the project utilizes **K3s**:
